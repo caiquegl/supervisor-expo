@@ -1,0 +1,73 @@
+{
+  "expo": {
+    "name": "supervisor",
+    "slug": "supervisor",
+    "version": "1.0.2",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon-710x599-ios.png",
+    "scheme": "myapp",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon-710x599-ios.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.rockat.supervisor"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/icon-710x599-ios.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/icon-710x599-ios.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "packagerOpts": {
+      "config": "metro.config.js",
+      "sourceExts": [
+        "expo.ts",
+        "expo.tsx",
+        "expo.js",
+        "expo.jsx",
+        "ts",
+        "tsx",
+        "js",
+        "jsx",
+        "json",
+        "wasm",
+        "svg"
+      ]
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "9dfb427b-ba8d-4fbe-89c2-fa4475ee3e02"
+      }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/9dfb427b-ba8d-4fbe-89c2-fa4475ee3e02",
+      "fallbackToCacheTimeout": 0
+    }
+  }
+}

@@ -1,0 +1,26 @@
+export const theme = {
+  colors: {
+    primary: '#9933ff',
+    primary_light: '#f7f0fe',
+    secondary: '#ff872c',
+    coins: '#FFEF32',
+    secondary_light: 'rgba(255, 135, 44, 0.3)',
+    sucess: '#12a454',
+    sucess_light: 'rgba(18, 164, 84, 0.3)',
+    dark_light_bg: 'rgba(53,53,53, 0.3)',
+    attention: '#e83f5b',
+    attention_light: 'rgba(232, 63, 91, 0.3)',
+    shape: '#fff',
+    text_dark: '#2e2f34',
+    title: '#363f5f',
+    text: '#4c4c4c',
+    background: '#f0f2f5',
+    gradient_home: ['#b56aff', '#6600cc'],
+    gradient_attention: ['#e83f5b', '#e83f5b', '#e83f5b'],
+  },
+  fonts: {
+    regular: 'Poppins-Regular',
+    medium: 'Poppins-Medium',
+    bold: 'Poppins-Bold',
+  },
+};
