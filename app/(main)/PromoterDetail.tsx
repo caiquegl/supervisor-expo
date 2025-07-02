@@ -32,13 +32,12 @@ export default function PromoterDetail() {
           <TouchableOpacity onPress={() => router.push("/(main)/PromotersComponent")}>
             <Text style={{ color: '#fff', fontSize: 16 }}>Voltar</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+
+            <ButtonBack 
             onPress={() => router.push("/(main)/PromotersComponent")}
-          >
-            <ButtonBack >
+            >
               <Left width={35} height={35} />
             </ButtonBack>
-          </TouchableOpacity>
 
         </ActionsHeader>
         <ScrollView
