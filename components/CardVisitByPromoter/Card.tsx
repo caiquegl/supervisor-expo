@@ -26,11 +26,6 @@ interface IProps {
         check_out_battery: string
         check_in_photo: string
         check_out_photo: string
-        count_store_task_pendent: number
-        count_store_task_complete: number
-        count_product_task_pendent: number
-        count_product_task_complete: number
-        total_task: number,
     }
 }
 export const Card = ({ data }: IProps) => {
@@ -52,22 +47,8 @@ export const Card = ({ data }: IProps) => {
                         alignItems="center"
                     >
                         <Store width="20px" height="20px" />
-                        <Text ml="10px" mr="10px" fontSize="15px" color="#2E2F34" fontWeight="bold">
-                            {data.pdv_name && data.pdv_name.split('').length < 20
-                                ? data.pdv_name
-                                : data.pdv_name && data.pdv_name.split('').length > 0
-                                    ? (
-                                        <>
-                                            {data.pdv_name.split('').map((char: any, number) => (
-                                                <Fragment key={number}>
-                                                    {number < 20 && char}
-                                                </Fragment>
-                                            ))}
-                                            {data.pdv_name.split('').length >= 20 && '...'}
-                                        </>
-                                    )
-                                    : null
-                            }
+                        <Text ml="10px" mr="10px" fontSize="15px" color="#2E2F34" fontWeight="bold" style={{ flexWrap: 'wrap', flex: 1 }}>
+                            {data.pdv_name}
                         </Text>
 
                         {data.status === 'PENDENT' &&
@@ -81,80 +62,14 @@ export const Card = ({ data }: IProps) => {
                         }
                     </Flex>
                 </Flex>
-                {/* <HStack
-                    space="15px"
-                    justifyContent="center"
-                    borderRadius="7px"
-                    bg="#F7F0FE"
-                    alignItems="center"
-                    h="30px"
-                    mt="15px"
-                >
-                    <HStack space="7px" alignItems="center">
-                        <Bag width={20} height={20} />
-                        <Text
-                            fontSize="10px"
-                            color="#6600CC"
-                        >
-                            {data.count_store_task_complete}/{data.count_store_task_complete + data.count_store_task_pendent} tarefas
-                        </Text>
-                    </HStack>
-                    <HStack space="7px" alignItems="center">
-                        <StorePrimary width={20} height={20} />
-                        <Text
-                            fontSize="10px"
-                            color="#6600CC"
-                        >
-                            {data.count_product_task_complete}/{data.count_product_task_complete + data.count_product_task_pendent} tarefas
-                        </Text>
-                    </HStack>
-                    <Text
-                        fontSize="10px"
-                        color="#6600CC"
-                    >
-                        {data.count_store_task_complete + data.count_product_task_pendent + data.count_store_task_complete + data.count_store_task_pendent} tarefas
-                    </Text>
-                </HStack> */}
-                <HStack space="7px" mt="15px" h="18px">
-                    <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
-                        Loja:
-                    </Text>
-                    <Text fontSize="13px" color="#4C4C4C">
-                        {data.pdv_name && data.pdv_name.length < 20
-                            ? data.pdv_name
-                            : data.pdv_name && data.pdv_name.length > 0
-                                ? (
-                                    <>
-                                        {data.pdv_name.split('').map((char: any, number) => (
-                                            <Fragment key={number}>
-                                                {number < 20 && char}
-                                            </Fragment>
-                                        ))}
-                                        {data.pdv_name.length >= 20 && '...'}
-                                    </>
-                                )
-                                : null
-                        }
-                    </Text>
+             
 
-                </HStack>
                 <HStack space="7px" mt="15px" h="18px">
                     <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
                         Endereço:
                     </Text>
-                    <Text fontSize="13px" color="#4C4C4C" >
-                        {data.pdv_address && data.pdv_address.split('').length < 20
-                            ? data.pdv_address
-                            : data.pdv_address && data.pdv_address.split('').length > 0
-                                ? data.pdv_address.split('').map((char: any, number) => (
-                                    <Fragment key={number}>
-                                        {number < 20 && char}
-                                    </Fragment>
-                                ))
-                                : null
-                        }
-                        {data.pdv_address && data.pdv_address.split('').length >= 20 && '...'}
-
+                    <Text fontSize="13px" color="#4C4C4C" style={{ flexWrap: 'wrap', flex: 1 }}>
+                        {data.pdv_address}
                     </Text>
                 </HStack>
                 <HStack space="7px" mt="15px" h="18px">

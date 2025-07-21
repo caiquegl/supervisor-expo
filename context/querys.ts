@@ -27,7 +27,8 @@ query VisitPhotosById($filter: VisitPhotosInput!) {
     field_name,
     url_image,
     sub_workspace,
-    collected_date
+    collected_date,
+    pdv_name
   }
 }
 `;
@@ -132,11 +133,6 @@ query GetPromoter($filter: GetPromoterFilter!, $getPromoterId: Int!) {
       check_out_battery
       check_in_photo
       check_out_photo
-      count_store_task_pendent
-      count_store_task_complete
-      count_product_task_pendent
-      count_product_task_complete
-      total_task
     }
   }
 }

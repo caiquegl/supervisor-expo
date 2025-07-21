@@ -15,7 +15,7 @@ export const ContainerIconCard = styled.View`
 
 export const TextTitleCard = styled.Text`
   color: #2e2f34;
-  font-size: 18px;
+  font-size: 16px;
   text-transform: uppercase;
   font-weight: 700;
 `;

@@ -5,7 +5,7 @@ import Check from '../../assets/icon/check-circle.svg'
 import Icon from 'react-native-vector-icons/Feather'
 import IconFa from 'react-native-vector-icons/FontAwesome'
 import Phone from '../../assets/icon/phone-gray.svg'
-import { TouchableOpacity, ScrollView } from 'react-native'
+import { TouchableOpacity, ScrollView, View, Linking } from 'react-native'
 import { CardOnOff } from "../CardOnOff";
 import { userContext } from "../../context/userContext";
 import { useQuery } from "@apollo/client";
@@ -29,8 +29,9 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
     (item?.visits_in_progress || 0) + (item?.visits_justify || 0);
 
   return (
-    <TouchableOpacity onPress={onPress}>
+    <View>
       <Box mt="15px" mb="15px">
+        <TouchableOpacity onPress={onPress}>
         <Flex
           direction="row"
           alignItems="center"
@@ -67,7 +68,7 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
           <Eye width={25} height={25} />
         </Flex>
 
-        <Flex
+        {/* <Flex
           direction="row"
           alignItems="center"
           mt="10px"
@@ -88,8 +89,8 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
             {item?.last_visit || '-'}
           </Text>
           <Check width={20} height={20} />
-        </Flex>
-        <Flex
+        </Flex> */}
+        {/* <Flex
           direction="row"
           alignItems="center"
           mt="7px"
@@ -106,7 +107,7 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
           >
             {item?.sync_last_change || '-'}
           </Text>
-        </Flex>
+        </Flex> */}
         <Flex alignItems="center" justifyContent="space-between" direction="row">
           <Flex
             direction="row"
@@ -261,6 +262,7 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
           </VStack>
         </Flex>
 
+        </TouchableOpacity>
         <HStack space="15px">
           <Center
             borderRadius="12px"
@@ -268,7 +270,9 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
             w="35px"
             h="35"
           >
-            <Phone width={20} height={20} />
+            <TouchableOpacity onPress={() => Linking.openURL(`tel:${item.phone}`)}>
+              <Phone width={20} height={20} />
+            </TouchableOpacity>
           </Center>
           <Center
             borderRadius="12px"
@@ -276,12 +280,13 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
             w="35px"
             h="35"
           >
-            <IconFa name="whatsapp" size={20}
-              style={{ color: '#00B259' }} />
+            <TouchableOpacity onPress={() => Linking.openURL(`https://wa.me/${item.phone.replace(/\D/g, '')}`)}>
+              <IconFa name="whatsapp" size={20} style={{ color: '#00B259' }} />
+            </TouchableOpacity>
           </Center>
         </HStack>
       </Box>
-    </TouchableOpacity>
+    </View>
   );
 });
 
@@ -361,9 +366,10 @@ const PromoterItemComponent = () => {
     });
   }, [promoters]);
 
+
   return (
     <Box>
-      {data?.listPromoters && uniquePromoters.length > 0 && uniquePromoters?.map((item: any, key: any) => (
+      {data?.listPromoters && data?.listPromoters.length > 0 && data?.listPromoters?.map((item: any, key: any) => (
         <PromoterItem
           key={`${item.id}-${key}`}
           item={item}

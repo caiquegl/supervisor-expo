@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useCallback } from "react";
-import { ScrollView, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View, Modal, Platform, Button as RNButton } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import {
   ActionsHeader,
@@ -23,22 +23,56 @@ import { CardPromoterChart } from "../../components/CardPromoterChart";
 import { IPropsListPromoter } from "../../context/types";
 import { apolloContext } from "../../context/apolloContext";
 import { Menu } from "../../components/Menu";
+import { DatePickerModal } from 'react-native-paper-dates';
+import Icon from 'react-native-vector-icons/MaterialIcons';
+import { userContext } from '../../context/userContext';
+import { FilterDrawer } from '../../components/ui/FilterDrawer';
+import moment from "moment";
 
 export default function PromotersComponent() {
   const { listPromoter } = apolloContext();
-  const [valueSearch, setValueSearch] = useState("");
+  const { setFilter, filter } = userContext();
+  const [drawerVisible, setDrawerVisible] = useState(false);
+
+  // Sincronizar valor do filtro global para o campo de busca
+  const valueSearch = filter?.name || '';
+  const selectedDate = filter?.dt_visit
+    ? (() => {
+        if (typeof filter.dt_visit === 'string') {
+          const [year, month, day] = filter.dt_visit.split('-').map(Number);
+          return new Date(year, month - 1, day);
+        }
+        return undefined;
+      })()
+    : undefined;
+
+  // Contar filtros ativos globais
+  const filterCount = [filter?.dt_visit, filter?.name].filter(Boolean).length;
+
+  // Atualizar filtro global ao digitar
+  const handleSearchChange = (text: string) => {
+    setFilter({ ...filter, name: text });
+  };
 
   // Otimização: useMemo para filtrar dados apenas quando necessário
   const dataDash = useMemo(() => {
-    if (!valueSearch.trim()) {
+    if (!filter?.name?.trim()) {
       return listPromoter;
     }
-    
     return listPromoter.filter((el) =>
-      el.name.toLowerCase().includes(valueSearch.toLowerCase())
+      el.name.toLowerCase().includes(filter.name.toLowerCase())
     );
-  }, [listPromoter, valueSearch]);
+  }, [listPromoter, filter.name]);
 
+  // Aplicar filtro
+  const handleApplyFilter = () => {
+    setDrawerVisible(false);
+  };
+
+  // Limpar filtro
+  const handleClearFilter = () => {
+    setDrawerVisible(false);
+  };
 
   return (
     <View style={{flex: 1}}>
@@ -48,8 +82,26 @@ export default function PromotersComponent() {
             <LogoPromoter width={35} height={35} />
             <TextLogo>Teams</TextLogo>
           </ContainerIcon>
-    
+          {/* Botão de filtro com badge */}
+          <View style={{ position: 'relative', marginLeft: 'auto', marginRight: 12 }}>
+            <TouchableOpacity onPress={() => setDrawerVisible(true)}>
+              <Icon name="filter-list" size={28} color="#fff" />
+              {filterCount > 0 && (
+                <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#CC0066', borderRadius: 8, minWidth: 16, height: 16, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4 }}>
+                  <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{filterCount}</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          </View>
         </ActionsHeader>
+        <FilterDrawer
+          visible={drawerVisible}
+          selectedDate={selectedDate}
+          onChangeDate={date => setFilter({ ...filter, dt_visit: date ? date.toISOString().slice(0, 10) : undefined })}
+          onApply={handleApplyFilter}
+          onClear={handleClearFilter}
+          onClose={() => setDrawerVisible(false)}
+        />
         <ContainerIconCenter>
           <ContainerText>
             <TextName>Promotores</TextName>
@@ -60,7 +112,7 @@ export default function PromotersComponent() {
           <ContainerInput>
             <Input
               value={valueSearch}
-              onChangeText={setValueSearch}
+              onChangeText={handleSearchChange}
               placeholder="procure pelo nome"
             />
             <SearchPrimary width={20} height={20} />
@@ -75,7 +127,7 @@ export default function PromotersComponent() {
               direction="row"
             >
               <Text fontSize="18px" fontWeight="bold" color="#2E2F34">
-                VISÃO GERAL
+                VISÃO GERAL ({filter.dt_visit ? moment(filter.dt_visit, 'YYYY-MM-DD').format('DD/MM/YYYY') :  moment().format('DD/MM/YYYY')})
               </Text>
             </Flex>
             <CardPromoterChart />

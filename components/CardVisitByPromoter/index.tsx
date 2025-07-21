@@ -57,7 +57,6 @@ export const CardVisitByPromoter = ({ selected, navigation }: any) => {
                 direction="row"
                 alignItems="center"
                 w="100%"
-                mb="15px"
               >
                 <Center
                   borderRadius="full"
@@ -80,34 +79,13 @@ export const CardVisitByPromoter = ({ selected, navigation }: any) => {
                     fontSize="16px"
                     fontWeight="bold"
                     color="#2E2F34"
+                    style={{ flexWrap: 'wrap', flex: 1 }}
                   >
-                    {dataPromoter?.name.length > 0 && dataPromoter?.name.split('').length < 20 ? dataPromoter?.name : dataPromoter?.name.split('') && dataPromoter?.name.split('').length > 0 && dataPromoter?.name.split('').map((char: any, number) => (
-                      <Fragment key={number}>
-                        {number < 20 && char}
-                      </Fragment>
-                    ))}
-                    {dataPromoter?.name.length > 0 && dataPromoter?.name.split('').length >= 20 && '...'}
+                    {dataPromoter?.name}
                   </Text>
                 </Box>
               </Flex>
-              <Flex
-                direction="row"
-                alignItems="center"
-                mb="15px"
-              >
-                <Icon
-                  name="wifi"
-                  size={20}
-                  style={{ color: '#2E2F34' }}
-                />
-                <Text
-                  ml="7px"
-                  fontSize="13px"
-                  color="#4C4C4C"
-                >
-                  {selectedPromoter?.sync_last_change}
-                </Text>
-              </Flex>
+            
               <FlatList
                 data={dataPromoter?.visits}
                 keyExtractor={keyEstractor}

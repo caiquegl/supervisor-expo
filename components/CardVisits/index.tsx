@@ -1,7 +1,6 @@
 import React, { useCallback } from "react";
 import { ContainerCard, ContainerCardStatus, ContainerIconCard, TextTitleCard } from "./style";
 import ElippseGray from "../../assets/icon/ellipsis-v-gray.svg";
-import Arrow from "../../assets/icon/arrow-growth.svg";
 import { useQuery } from "@apollo/client";
 import { VISITS_QUERY } from "../../context/querys";
 import { userContext } from "../../context/userContext";
@@ -19,6 +18,7 @@ export const CardVisits = () => {
 
   const visits = data?.countVisitsDash || {};
 
+  console.log(visits, 'visits')
   return (
     <ContainerCard>
       <ContainerIconCard>
@@ -41,7 +41,7 @@ export const CardVisits = () => {
                   alignItems: 'center', // Equivalente ao Center
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: '#FF6100',
+                  borderColor: 'rgb(255, 187, 40)',
                   paddingHorizontal: 10, // Equivalente ao paddingX="10px"
                   paddingVertical: 9, // Equivalente ao paddingY="9px"
                   height: 78, // Equivalente ao h="78px"
@@ -49,37 +49,21 @@ export const CardVisits = () => {
                 }}
               >
                 <Text style={{
-                  fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: "#FF6100"
+                  fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: "rgb(255, 187, 40)"
                 }}
                 >
                   {visits.count_visits_in_progress ? visits.count_visits_in_progress : '0'}
                 </Text>
                 <Text
                   style={{
-                    color: "#FF6100",
+                    color: "rgb(255, 187, 40)",
                     fontSize: 11,
                     textAlign: "center"
                   }}
                 >
-                  Em andamento
+                  Em progresso
                 </Text>
-                <View
-                  style={{
-                    flexDirection: 'row', // Equivalente ao direction="row"
-                    backgroundColor: '#FF6100',
-                    borderRadius: 9,
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    position: 'absolute',
-                    padding: 3,
-                    bottom: -11,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 11 }}>
-                    {visits.count_visits_in_progress && visits.count_visits_total ? (visits.count_visits_in_progress * 100 / visits.count_visits_total).toFixed(2).toString() : '0'}
-                  </Text>
-                  <Arrow width={10} height={6} />
-                </View>
+               
               </View>
               <View
                 style={{
@@ -87,11 +71,11 @@ export const CardVisits = () => {
                   alignItems: 'center', // Centraliza horizontalmente
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: '#FF0001',
+                  borderColor: 'rgb(0, 136, 254)',
                   paddingHorizontal: 10, // Equivalente ao paddingX
                   paddingVertical: 9, // Equivalente ao paddingY
                   height: 78,
-                  backgroundColor: '#FFF2F2',
+                  backgroundColor: '#f2f6ffff',
                 }}
               >
                 <Text
@@ -99,37 +83,21 @@ export const CardVisits = () => {
                     fontSize: 22,
                     fontWeight: "bold",
                     textAlign: "center",
-                    color: "#FF0001",
+                    color: "rgb(0, 136, 254)",
                   }}
                 >
                   {visits.count_visits_pendent ? visits.count_visits_pendent : '0'}
                 </Text>
                 <Text
                   style={{
-                    color: "#FF0001",
+                    color: "rgb(0, 136, 254)",
                     fontSize: 11,
                     textAlign: "center",
                   }}
                 >
-                  Não concluídas
+                  Pendentes
                 </Text>
-                <View
-                  style={{
-                    flexDirection: 'row', // Equivalente ao direction="row"
-                    backgroundColor: '#FF0001',
-                    borderRadius: 9,
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    position: 'absolute',
-                    padding: 3,
-                    bottom: -11,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 11 }}>
-                    {visits.count_visits_pendent && visits.count_visits_total ? (visits.count_visits_pendent * 100 / visits.count_visits_total).toFixed(2).toString() : '0'}
-                  </Text>
-                  <Arrow width={10} height={6} />
-                </View>
+                
               </View>
               <View
                 style={{
@@ -137,7 +105,7 @@ export const CardVisits = () => {
                   alignItems: 'center', // Centraliza horizontalmente
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: '#0AB200',
+                  borderColor: 'rgb(0, 196, 159)',
                   paddingHorizontal: 10, // Equivalente ao paddingX
                   paddingVertical: 9, // Equivalente ao paddingY
                   height: 78,
@@ -149,37 +117,21 @@ export const CardVisits = () => {
                     fontSize: 22,
                     fontWeight: "bold",
                     textAlign: "center",
-                    color: "#0AB200",
+                    color: "rgb(0, 196, 159)",
                   }}
                 >
                   {visits.count_visits_complete ? visits.count_visits_complete : '0'}
                 </Text>
                 <Text
                   style={{
-                    color: "#0AB200",
+                    color: "rgb(0, 196, 159)",
                     fontSize: 11,
                     textAlign: "center",
                   }}
                 >
-                  Concluído
+                  Concluídas
                 </Text>
-                <View
-                  style={{
-                    flexDirection: 'row', // Equivalente ao direction="row"
-                    backgroundColor: '#0AB200',
-                    borderRadius: 9,
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    position: 'absolute',
-                    padding: 3,
-                    bottom: -11,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 11 }}>
-                    {visits.count_visits_complete && visits.count_visits_total ? (visits.count_visits_complete * 100 / visits.count_visits_total).toFixed(2).toString() : '0'}
-                  </Text>
-                  <Arrow width={10} height={6} />
-                </View>
+               
               </View>
               <View
                 style={{
@@ -187,7 +139,7 @@ export const CardVisits = () => {
                   alignItems: 'center', // Centraliza horizontalmente
                   borderRadius: 12,
                   borderWidth: 1,
-                  borderColor: '#FFB300',
+                  borderColor: 'rgb(255, 128, 66)',
                   paddingHorizontal: 10, // Equivalente ao paddingX
                   paddingVertical: 9, // Equivalente ao paddingY
                   height: 78,
@@ -199,37 +151,21 @@ export const CardVisits = () => {
                     fontSize: 22,
                     fontWeight: "bold",
                     textAlign: "center",
-                    color: "#FFB300",
+                    color: "rgb(255, 128, 66)",
                   }}
                 >
-                  {visits.count_visits_pendent ? visits.count_visits_pendent : '0'}
+                  {visits.count_visits_justify ? visits.count_visits_justify : '0'}
                 </Text>
                 <Text
                   style={{
-                    color: "#FFB300",
+                    color: "rgb(255, 128, 66)",
                     fontSize: 11,
                     textAlign: "center",
                   }}
                 >
-                  Pendente
+                  Justificadas
                 </Text>
-                <View
-                  style={{
-                    flexDirection: 'row', // Equivalente ao direction="row"
-                    backgroundColor: '#FFB300',
-                    borderRadius: 9,
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    position: 'absolute',
-                    padding: 3,
-                    bottom: -11,
-                  }}
-                >
-                  <Text style={{ color: "#fff", fontSize: 11 }}>
-                    {visits.count_visits_pendent && visits.count_visits_total ? (visits.count_visits_pendent * 100 / visits.count_visits_total).toFixed(2).toString() : '0'}
-                  </Text>
-                  <Arrow width={10} height={6} />
-                </View>
+              
               </View>
             </View>
           </ScrollView>

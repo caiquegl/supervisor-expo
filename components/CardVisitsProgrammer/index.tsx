@@ -12,12 +12,20 @@ import { VISITS_PROGRAMER_QUERY } from "../../context/querys";
 import { userContext } from "../../context/userContext";
 import { Button } from "@/styles/style.sigin";
 import { router } from "expo-router";
+import moment from "moment";
 
 export const CardVisitsProgrammer = () => {
   const { filter } = userContext();
   const [skip, setSkip] = useState(0);
   const [visitsProgrammer, setVisitsProgrammer] = useState<any[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Resetar paginação e lista ao mudar o filtro global
+  useEffect(() => {
+    setSkip(0);
+    setVisitsProgrammer([]);
+    console.log(filter, 'filter')
+  }, [filter]);
 
   const { data, loading, fetchMore, error } = useQuery(VISITS_PROGRAMER_QUERY, {
     variables: {
@@ -241,8 +249,7 @@ export const CardVisitsProgrammer = () => {
   return (
     <ContainerCard>
       <ContainerIconCard>
-        <TextTitleCard>VISITAS PROGRAMADAS</TextTitleCard>
-        <ElippseGray width={20} height={20} />
+        <TextTitleCard>VISITAS PROGRAMADAS ({filter.dt_visit ? moment(filter.dt_visit, 'YYYY-MM-DD').format('DD/MM/YYYY') :  moment().format('DD/MM/YYYY')})</TextTitleCard>
       </ContainerIconCard>
       
       <FlatList
@@ -251,7 +258,7 @@ export const CardVisitsProgrammer = () => {
         keyExtractor={keyExtractor}
         ItemSeparatorComponent={renderSeparator}
         ListFooterComponent={renderFooter}
-        ListEmptyComponent={renderEmpty}
+        //ListEmptyComponent={renderEmpty}
         showsVerticalScrollIndicator={false}
         maxToRenderPerBatch={5}
         windowSize={10}
