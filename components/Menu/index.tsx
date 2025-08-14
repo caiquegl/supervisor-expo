@@ -76,7 +76,7 @@ export const Menu = ({ routeActive }: IProps) => {
             apiBackoffice.defaults.headers.authorization = `Bearer ${user.token}`
             apiBackoffice.defaults.headers.workspace = user.slug
             apiBackoffice.defaults.headers.workspaceId = user.workspace_id
-            let { data } = await apiBackoffice.get(`/search/pdvs?search=${value}`)
+            let { data } = await apiBackoffice.get(`/search/pdvs?search=${value}&active=true`)
             setListStore(data);
         } catch (error) {
         }
