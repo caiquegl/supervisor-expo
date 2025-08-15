@@ -6,13 +6,15 @@ import Store from "../../assets/icon/store.svg";
 import Pendent from '../../assets/icon/clock-pendent.svg'
 import Complete from '../../assets/icon/check-circle.svg'
 import Inprogress from '../../assets/icon/check-circle-progress.svg'
-import { TouchableOpacity, View, FlatList, ActivityIndicator } from 'react-native'
+import { TouchableOpacity, View, FlatList, ActivityIndicator, Image } from 'react-native'
 import { useQuery } from "@apollo/client";
 import { VISITS_PROGRAMER_QUERY } from "../../context/querys";
 import { userContext } from "../../context/userContext";
 import { Button } from "@/styles/style.sigin";
 import { router } from "expo-router";
 import moment from "moment";
+import { Ionicons } from "@expo/vector-icons";
+import Lightbox from "react-native-lightbox-v2";
 
 export const CardVisitsProgrammer = () => {
   const { filter } = userContext();
@@ -24,14 +26,13 @@ export const CardVisitsProgrammer = () => {
   useEffect(() => {
     setSkip(0);
     setVisitsProgrammer([]);
-    console.log(filter, 'filter')
   }, [filter]);
 
   const { data, loading, fetchMore, error } = useQuery(VISITS_PROGRAMER_QUERY, {
     variables: {
       filter: { ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), offset: skip },
     },
-        fetchPolicy: "no-cache",
+    fetchPolicy: "no-cache",
     errorPolicy: "all"
   });
 
@@ -106,6 +107,12 @@ export const CardVisitsProgrammer = () => {
           return <Inprogress width="20px" height="20px" />;
         case 'COMPLETE':
           return <Complete width="20px" height="20px" />;
+        case 'COMPLETE':
+          return <Ionicons
+            name="close-circle"
+            size={20}
+            color="rgb(255, 128, 66)"
+          />;
         default:
           return null;
       }
@@ -121,7 +128,7 @@ export const CardVisitsProgrammer = () => {
         }}
       >
         <View style={{ flex: 1 }}>
-          <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Flex
               flexDirection="row"
               justifyContent="flex-start"
@@ -150,7 +157,7 @@ export const CardVisitsProgrammer = () => {
               {truncateText(visit.pdv_name)}
             </Text>
           </HStack>
-          
+
           <HStack space="7px" mt="15px" h="18px">
             <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
               Endereço:
@@ -159,7 +166,7 @@ export const CardVisitsProgrammer = () => {
               {truncateText(visit.pdv_address)}
             </Text>
           </HStack>
-          
+
           <HStack space="7px" mt="15px" h="18px">
             <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
               Data da visita:
@@ -168,32 +175,72 @@ export const CardVisitsProgrammer = () => {
               {visit.dt_visit}
             </Text>
           </HStack>
-          
-          <View style={{ flexDirection: 'row' }}>
-            <HStack space="7px" mt="15px" h="18px">
-              <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
-                Check-in:
-              </Text>
-              <Text fontSize="13px" color="#4C4C4C">
-                {visit.check_in_date || 'Não realizado'}
-              </Text>
-            </HStack>
 
-            <HStack space="7px" mt="15px" h="18px" ml="8px">
-              <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
-                Check-out:
-              </Text>
-              <Text fontSize="13px" color="#4C4C4C">
-                {visit.check_out_date || 'Não realizado'}
-              </Text>
-            </HStack>
-          </View>
-          
-          {visit.status !== 'PENDENT' && (
+          {visit.status == 'IN_PROGRESS' || visit.status == 'COMPLETE' && (
+            <View style={{ flexDirection: 'row' }}>
+              <HStack space="7px" mt="15px" h="18px">
+                <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                  Check-in:
+                </Text>
+                <Text fontSize="13px" color="#4C4C4C">
+                  {visit.check_in_date || 'Não realizado'}
+                </Text>
+              </HStack>
+
+              <HStack space="7px" mt="15px" h="18px" ml="8px">
+                <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                  Check-out:
+                </Text>
+                <Text fontSize="13px" color="#4C4C4C">
+                  {visit.check_out_date || 'Não realizado'}
+                </Text>
+              </HStack>
+            </View>
+          )}
+
+          {visit.status === 'JUSTIFIED_ABSENCE' &&
+            <>
+              <View style={{ marginTop: 10, backgroundColor: '#fae7c9', padding: 10, borderRadius: 20, marginBottom: 10, alignItems: 'center', justifyContent: 'center', maxWidth: 100 }}>
+                <Text style={{ color: 'rgb(255, 128, 66)', fontSize: 14, fontWeight: 'bold' }}>Justificado</Text>
+              </View>
+              <HStack space="7px" mt="15px" h="18px">
+                <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                  Motivo:
+                </Text>
+                <Text fontSize="13px" color="#4C4C4C" >
+                  {visit.option_justify || 'Não informado'}
+                </Text>
+              </HStack>
+              {visit.obs_justify && (
+                <HStack space="7px" mt="15px" h="18px">
+                  <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                    Observação:
+                  </Text>
+                  <Text fontSize="13px" color="#4C4C4C" >
+                    {visit.obs_justify}
+                  </Text>
+                </HStack>
+              )}
+              {visit.picture_justify && (
+                <HStack space="7px" mt="15px" h="18px">
+                  <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                    Foto da justificativa:
+                  </Text>
+                  <View style={{ width: 91, height: 91 }}>
+                    <Lightbox navigator={Navigator}>
+                      <Image source={{ uri: visit.picture_justify }} style={{ width: '100%', height: '100%' }} />
+                    </Lightbox>
+                  </View>
+                </HStack>
+              )}
+            </>
+          }
+
+          {visit.status == 'IN_PROGRESS' || visit.status == 'COMPLETE' && (
             <View style={{ width: '100%', justifyContent: "center", alignItems: "center", marginTop: 10 }}>
-              <Button 
+              <Button
                 style={{ marginTop: 0, height: 30, width: '100%' }}
-                onPress={() => router.push({pathname: './pictures', params: visit })}
+                onPress={() => router.push({ pathname: './pictures', params: visit })}
               >
                 <Text style={{ color: '#000', fontSize: 13, fontWeight: 'bold' }}>Ver fotos</Text>
               </Button>
@@ -216,9 +263,9 @@ export const CardVisitsProgrammer = () => {
         </Center>
       );
     }
-    
+
     return (
-      <TouchableOpacity 
+      <TouchableOpacity
         onPress={handleLoadMore}
         style={{ paddingVertical: 20 }}
       >
@@ -238,7 +285,7 @@ export const CardVisitsProgrammer = () => {
         </Center>
       );
     }
-    
+
     return (
       <Center py="40px">
         <Text fontSize="16px" color="#666">Nenhuma visita programada encontrada</Text>
@@ -249,9 +296,9 @@ export const CardVisitsProgrammer = () => {
   return (
     <ContainerCard>
       <ContainerIconCard>
-        <TextTitleCard>VISITAS PROGRAMADAS ({filter.dt_visit ? moment(filter.dt_visit, 'YYYY-MM-DD').format('DD/MM/YYYY') :  moment().format('DD/MM/YYYY')})</TextTitleCard>
+        <TextTitleCard>VISITAS PROGRAMADAS ({filter.dt_visit ? moment(filter.dt_visit, 'YYYY-MM-DD').format('DD/MM/YYYY') : moment().format('DD/MM/YYYY')})</TextTitleCard>
       </ContainerIconCard>
-      
+
       <FlatList
         data={uniqueVisits}
         renderItem={renderVisitItem}
@@ -269,7 +316,7 @@ export const CardVisitsProgrammer = () => {
           offset: 200 * index,
           index,
         })}
-        contentContainerStyle={{ 
+        contentContainerStyle={{
           paddingTop: 30,
           paddingBottom: 20,
           minHeight: 400

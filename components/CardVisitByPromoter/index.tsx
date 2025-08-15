@@ -15,13 +15,29 @@ export const CardVisitByPromoter = ({ selected, navigation }: any) => {
 
   const { data, loading, refetch } = useQuery(VISITS_BY_PROMOTER_QUERY, {
     variables: {
-      filter: { dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10) },
+      filter: { 
+        dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10),
+        user_id: filter?.user_id || undefined, // Corrigido para user_id
+      },
       getPromoterId: selectedPromoter?.id,
     },
     skip: !selectedPromoter?.id,
     fetchPolicy: "no-cache",
     errorPolicy: "all",
   });
+
+  // Efeito para refazer a requisição quando filtros mudarem
+  useEffect(() => {
+    if (selectedPromoter?.id && refetch) {
+      refetch({
+        filter: { 
+          dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10),
+          user_id: filter?.user_id || undefined, // Corrigido para user_id
+        },
+        getPromoterId: selectedPromoter?.id,
+      });
+    }
+  }, [filter?.dt_visit, filter?.user_id, selectedPromoter?.id, refetch]);
 
   useFocusEffect(
     useCallback(() => {

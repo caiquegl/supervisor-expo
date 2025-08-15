@@ -295,21 +295,20 @@ const PromoterItemComponent = () => {
   const [skip, setSkip] = useState(0);
   const [promoters, setPromoters] = useState<any[]>([]);
 
-
-  const { data, loading, fetchMore, error } = useQuery(LIST_PROMOTER_QUERY, {
+  // Query com filtros atualizados incluindo promotor
+  const { data, loading, fetchMore, error, refetch } = useQuery(LIST_PROMOTER_QUERY, {
     variables: {
       filter: {
         ...filter,
         dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10),
+        promoter_id: filter?.promoter_id || undefined, // Adiciona filtro de promotor
       },
     },
     fetchPolicy: "no-cache",
     errorPolicy: "all"
-    
   });
-  
 
-
+  // Efeito para limpar dados quando filtros mudarem
   useEffect(() => {
     if (data?.listPromoters) {
       setPromoters(prev => {
@@ -320,10 +319,23 @@ const PromoterItemComponent = () => {
     }
   }, [data]);
 
-  
-  
-  
-  
+  // Efeito para refazer a requisição quando filtros mudarem
+  useEffect(() => {
+    // Reseta o estado local quando filtros mudarem
+    setSkip(0);
+    setPromoters([]);
+    
+    // Refaz a requisição com os novos filtros
+    if (refetch) {
+      refetch({
+        filter: {
+          ...filter,
+          dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10),
+          user_id: filter?.user_id || undefined,
+        },
+      });
+    }
+  }, [filter?.dt_visit, filter?.user_id, refetch]); // Dependências específicas dos filtros
 
   useFocusEffect(
     useCallback(() => {
@@ -337,7 +349,12 @@ const PromoterItemComponent = () => {
     setSkip(newSkip);
     fetchMore({
       variables: {
-        filter: { ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), offset: newSkip },
+        filter: { 
+          ...filter, 
+          dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), 
+          user_id: filter?.user_id || undefined, // Corrigido para user_id
+          offset: newSkip 
+        },
       },
       updateQuery: (prev, { fetchMoreResult }) => {
         if (!fetchMoreResult || !fetchMoreResult.listPromoters) return prev;

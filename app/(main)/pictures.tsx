@@ -243,7 +243,8 @@ export default function Pictures() {
             maxToRenderPerBatch={6}
             windowSize={7}
             removeClippedSubviews
-            contentContainerStyle={{ alignItems: 'center', justifyContent: 'space-between', paddingBottom: 32 }}
+            columnWrapperStyle={{ justifyContent: 'space-between' }}
+            contentContainerStyle={{ paddingBottom: 32 }}
             showsVerticalScrollIndicator={false}
           />
         </ContainerBody>
