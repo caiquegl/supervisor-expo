@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import {
   ActionsHeader,
   ButtonBack,
@@ -29,8 +29,40 @@ interface RouteParams {
   id?: string;
 }
 
+// Componente de loading para thumbnails
+const ThumbnailLoader = () => (
+  <View style={{ 
+    width: 91, 
+    height: 91, 
+    backgroundColor: '#f0f0f0', 
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center'
+  }}>
+    <ActivityIndicator size="small" color="#6600CC" />
+  </View>
+);
+
+// Componente de loading para imagem expandida
+const FullImageLoader = () => (
+  <View style={{ 
+    width: '100%', 
+    height: '100%', 
+    backgroundColor: '#000', 
+    justifyContent: 'center',
+    alignItems: 'center'
+  }}>
+    <ActivityIndicator size="large" color="#fff" />
+    <Text style={{ color: '#fff', marginTop: 10 }}>Carregando imagem...</Text>
+  </View>
+);
+
 const PhotoItem = React.memo(({ item }: any) => {
   const [modalVisible, setModalVisible] = React.useState(false);
+  const [thumbnailLoaded, setThumbnailLoaded] = React.useState(false);
+  const [fullImageLoaded, setFullImageLoaded] = React.useState(false);
+  const [imageError, setImageError] = React.useState(false);
+
   const compartilharTexto = async (texto: any) => {
     try {
       await Share.share({ message: texto });
@@ -42,12 +74,70 @@ const PhotoItem = React.memo(({ item }: any) => {
   const screenWidth = Dimensions.get('window').width;
   const screenHeight = Dimensions.get('window').height;
 
+  // Gera URL de thumbnail (assumindo que o backend suporta parâmetros de resize)
+  const getThumbnailUrl = (url: string) => {
+    // Se a URL já contém parâmetros, adiciona os de thumbnail
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}w=200&h=200&q=80`;
+  };
+
+  // Gera URL otimizada para visualização expandida
+  const getFullImageUrl = (url: string) => {
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}w=${Math.floor(screenWidth * 0.95)}&h=${Math.floor(screenHeight * 0.7)}&q=90`;
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
+  };
+
+  const handleThumbnailLoad = () => {
+    setThumbnailLoaded(true);
+  };
+
+  const handleFullImageLoad = () => {
+    setFullImageLoaded(true);
+  };
+
+  const handleModalOpen = () => {
+    setFullImageLoaded(false);
+    setImageError(false);
+    setModalVisible(true);
+  };
+
   return (
     <View style={{ width: '50%', marginBottom: 20, justifyContent: "center", alignItems: "center" }}>
       <View style={{ backgroundColor: '#fff', borderRadius: 10, padding: 10, justifyContent: "center", alignItems: "center", elevation: 2 }}>
         <View style={{ width: 91, height: 91 }}>
-          <TouchableOpacity onPress={() => setModalVisible(true)}>
-            <Image source={{ uri: item.url_image }} style={{ width: '100%', height: '100%' }} alt={item.url_image} />
+          <TouchableOpacity onPress={handleModalOpen}>
+            {!thumbnailLoaded && !imageError && <ThumbnailLoader />}
+            {!imageError && (
+              <Image
+                source={{ uri: getThumbnailUrl(item.url_image) }}
+                style={{ 
+                  width: '100%', 
+                  height: '100%',
+                  borderRadius: 10,
+                  opacity: thumbnailLoaded ? 1 : 0
+                }}
+                onLoad={handleThumbnailLoad}
+                onError={handleImageError}
+                resizeMode="cover"
+              />
+            )}
+            {imageError && (
+              <View style={{ 
+                width: '100%', 
+                height: '100%', 
+                backgroundColor: '#f0f0f0', 
+                borderRadius: 10,
+                justifyContent: 'center',
+                alignItems: 'center'
+              }}>
+                <Icon name="broken-image" size={24} color="#ccc" />
+                <Text style={{ fontSize: 10, color: '#999', marginTop: 4 }}>Erro ao carregar</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </View>
         <Text style={{ width: '100%', textAlign: 'center', fontSize: 12, marginTop: 10 }}>Empresa: {item.sub_workspace.slice(0, 15)}</Text>
@@ -69,29 +159,41 @@ const PhotoItem = React.memo(({ item }: any) => {
             <Text style={{ color: '#fff', fontSize: 28 }}>×</Text>
           </TouchableOpacity>
           <View style={{ position: 'relative', width: screenWidth * 0.95, height: screenHeight * 0.7, justifyContent: 'center', alignItems: 'center' }}>
-            <ImageZoom
-              cropWidth={screenWidth * 0.95}
-              cropHeight={screenHeight * 0.7}
-              imageWidth={screenWidth * 0.95}
-              imageHeight={screenHeight * 0.7}
-              minScale={1}
-              maxScale={3}
-              enableCenterFocus={false}
-              style={{ backgroundColor: 'transparent' }}
-            >
-              <Image
-                source={{ uri: item.url_image }}
-                style={{
-                  width: screenWidth * 0.95,
-                  height: screenHeight * 0.7,
-                  resizeMode: 'contain',
-                  borderRadius: 10,
-                  borderWidth: 2,
-                  backgroundColor: 'transparent',
-                }}
-                alt={item.url_image}
-              />
-            </ImageZoom>
+            {!fullImageLoaded && <FullImageLoader />}
+            
+            {fullImageLoaded && (
+              <ImageZoom
+                cropWidth={screenWidth * 0.95}
+                cropHeight={screenHeight * 0.7}
+                imageWidth={screenWidth * 0.95}
+                imageHeight={screenHeight * 0.7}
+                minScale={1}
+                maxScale={3}
+                enableCenterFocus={false}
+                style={{ backgroundColor: 'transparent' }}
+              >
+                <Image
+                  source={{ uri: getFullImageUrl(item.url_image) }}
+                  style={{
+                    width: screenWidth * 0.95,
+                    height: screenHeight * 0.7,
+                    resizeMode: 'contain',
+                    borderRadius: 10,
+                    borderWidth: 2,
+                    backgroundColor: 'transparent'
+                  }}
+                  onError={handleImageError}
+                />
+              </ImageZoom>
+            )}
+            
+            {/* Imagem invisível para carregar em background */}
+            <Image
+              source={{ uri: getFullImageUrl(item.url_image) }}
+              style={{ position: 'absolute', opacity: 0, width: 1, height: 1 }}
+              onLoad={handleFullImageLoad}
+              onError={handleImageError}
+            />
             {/* Descrição pequena em amarelo no canto inferior direito da foto */}
             {(item.pdv_name) && (
               <Text
@@ -239,13 +341,20 @@ export default function Pictures() {
             renderItem={({ item }) => <PhotoItem item={item} />}
             keyExtractor={(item, index) => item.url_image + index}
             numColumns={2}
-            initialNumToRender={6}
-            maxToRenderPerBatch={6}
-            windowSize={7}
-            removeClippedSubviews
+            initialNumToRender={4}
+            maxToRenderPerBatch={4}
+            windowSize={5}
+            removeClippedSubviews={true}
             columnWrapperStyle={{ justifyContent: 'space-between' }}
             contentContainerStyle={{ paddingBottom: 32 }}
             showsVerticalScrollIndicator={false}
+            getItemLayout={(data, index) => ({
+              length: 150, // Altura aproximada de cada item
+              offset: 150 * Math.floor(index / 2),
+              index,
+            })}
+            updateCellsBatchingPeriod={100}
+            disableVirtualization={false}
           />
         </ContainerBody>
       </Container>
