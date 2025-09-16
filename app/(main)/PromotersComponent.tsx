@@ -46,8 +46,10 @@ export default function PromotersComponent() {
       })()
     : undefined;
 
+  const selectedUserId = filter?.user_id;
+
   // Contar filtros ativos globais
-  const filterCount = [filter?.dt_visit, filter?.name].filter(Boolean).length;
+  const filterCount = [filter?.dt_visit, filter?.name, filter?.user_id].filter(Boolean).length;
 
   // Atualizar filtro global ao digitar
   const handleSearchChange = (text: string) => {
@@ -71,7 +73,30 @@ export default function PromotersComponent() {
 
   // Limpar filtro
   const handleClearFilter = () => {
+    setFilter({
+      dt_visit: moment().format('YYYY-MM-DD')
+    });
     setDrawerVisible(false);
+  };
+
+  // Atualizar filtro de data
+  const handleDateChange = (date: Date | undefined) => {
+    if (date) {
+      setFilter({ ...filter, dt_visit: moment(date).format('YYYY-MM-DD') });
+    } else {
+      const { dt_visit, ...restFilter } = filter;
+      setFilter(restFilter);
+    }
+  };
+
+  // Atualizar filtro de usuário
+  const handleUserIdChange = (userId: number | undefined) => {
+    if (userId) {
+      setFilter({ ...filter, user_id: userId });
+    } else {
+      const { user_id, ...restFilter } = filter;
+      setFilter(restFilter);
+    }
   };
 
   return (
@@ -97,7 +122,9 @@ export default function PromotersComponent() {
         <FilterDrawer
           visible={drawerVisible}
           selectedDate={selectedDate}
-          onChangeDate={date => setFilter({ ...filter, dt_visit: date ? date.toISOString().slice(0, 10) : undefined })}
+          onChangeDate={handleDateChange}
+          selectedUserId={selectedUserId}
+          onChangeUserId={handleUserIdChange}
           onApply={handleApplyFilter}
           onClear={handleClearFilter}
           onClose={() => setDrawerVisible(false)}

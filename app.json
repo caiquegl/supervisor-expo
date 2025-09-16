@@ -2,7 +2,7 @@
   "expo": {
     "name": "supervisor",
     "slug": "supervisor",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon-710x599-ios.png",
     "scheme": "myapp",
@@ -16,7 +16,39 @@
         "foregroundImage": "./assets/images/icon-710x599-ios.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.rockat.supervisor"
+      "package": "com.rockat.supervisor",
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE",
+        "WAKE_LOCK",
+        "FOREGROUND_SERVICE",
+        "SYSTEM_ALERT_WINDOW"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "team-mobile-api.rock-at.com"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "softwareKeyboardLayoutMode": "pan",
+      "userInterfaceStyle": "automatic",
+      "allowBackup": false,
+      "hardwareAccelerated": true,
+      "largeHeap": true,
+      "usesCleartextTraffic": false,
+      "compileSdkVersion": 34,
+      "targetSdkVersion": 34,
+      "minSdkVersion": 23,
+      "versionCode": 2,
+      "playStoreUrl": "https://play.google.com/store/apps/details?id=com.rockat.supervisor",
+      "jsEngine": "hermes"
     },
     "web": {
       "bundler": "metro",

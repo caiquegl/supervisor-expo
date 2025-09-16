@@ -19,6 +19,7 @@ import { theme } from '@/theme';
 import { FilterDrawer } from '../../components/ui/FilterDrawer';
 import { userContext } from '../../context/userContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import moment from 'moment';
 
 export default function PromoterDetail() {
   const { setFilter, filter } = userContext();
@@ -29,24 +30,64 @@ export default function PromoterDetail() {
     ? (() => {
         if (typeof filter.dt_visit === 'string') {
           const [year, month, day] = filter.dt_visit.split('-').map(Number);
-          return new Date(year, month - 1, day);
+          const simpleDate = new Date(year, month - 1, day);
+          console.log('selectedDate calculado simples:', simpleDate);
+          console.log('filter.dt_visit:', filter.dt_visit);
+          console.log('year, month, day:', year, month, day);
+          return simpleDate;
         }
         return undefined;
       })()
     : undefined;
 
+  const selectedUserId = filter?.user_id;
+
+  console.log('PromoterDetail renderizado:');
+  console.log('filter:', filter);
+  console.log('selectedDate final:', selectedDate);
+  console.log('selectedUserId:', selectedUserId);
+
   // Contar filtros ativos globais
-  const filterCount = filter?.dt_visit ? 1 : 0;
+  const filterCount = [filter?.dt_visit, filter?.user_id].filter(Boolean).length;
 
   // Aplicar filtro
   const handleApplyFilter = () => {
-    
     setDrawerVisible(false);
   };
 
   // Limpar filtro
   const handleClearFilter = () => {
+    setFilter({
+      dt_visit: moment().format('YYYY-MM-DD')
+    });
     setDrawerVisible(false);
+  };
+
+  // Atualizar filtro de data
+  const handleDateChange = (date: any) => {
+    console.log('handleDateChange chamado com:', date);
+    console.log('Tipo da data:', typeof date);
+    
+    if (date) {
+      // Usar moment para garantir consistência de timezone
+      const formattedDate = moment(date).format('YYYY-MM-DD');
+      console.log('Data formatada:', formattedDate);
+      setFilter({ ...filter, dt_visit: formattedDate });
+    } else {
+      console.log('Data é null/undefined, removendo dt_visit do filtro');
+      const { dt_visit, ...restFilter } = filter;
+      setFilter(restFilter);
+    }
+  };
+
+  // Atualizar filtro de usuário
+  const handleUserIdChange = (userId: number | undefined) => {
+    if (userId) {
+      setFilter({ ...filter, user_id: userId });
+    } else {
+      const { user_id, ...restFilter } = filter;
+      setFilter(restFilter);
+    }
   };
 
   return (
@@ -72,9 +113,9 @@ export default function PromoterDetail() {
         <FilterDrawer
           visible={drawerVisible}
           selectedDate={selectedDate}
-          onChangeDate={date => {
-            setFilter({ ...filter, dt_visit: date ? date.toISOString().slice(0, 10) : undefined })
-          }}
+          onChangeDate={handleDateChange}
+          selectedUserId={selectedUserId}
+          onChangeUserId={handleUserIdChange}
           onApply={handleApplyFilter}
           onClear={handleClearFilter}
           onClose={() => setDrawerVisible(false)}

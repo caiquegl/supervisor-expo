@@ -26,12 +26,16 @@ interface IProps {
         check_out_battery: string
         check_in_photo: string
         check_out_photo: string
+        obs_justify: string
+        option_justify: string
+        picture_justify: string
     }
 }
 export const Card = ({ data }: IProps) => {
     const [openMenu, setOpenMenu] = useState(false)
     const [open, setOpen] = useState(false)
 
+    console.log(data)
     return (
         <View>
             <Box py="20px">
@@ -62,7 +66,7 @@ export const Card = ({ data }: IProps) => {
                         }
                     </Flex>
                 </Flex>
-             
+
 
                 <HStack space="7px" mt="15px" h="18px">
                     <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
@@ -82,20 +86,25 @@ export const Card = ({ data }: IProps) => {
                 </HStack>
                 {data.status != 'PENDENT' &&
                     <>
-                        <HStack space="7px" mt="15px" h="18px">
-                            <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
-                                Check-in:
-                            </Text>
-                            <Text fontSize="13px" color="#4C4C4C" >
-                                {data.check_in_date}
-                            </Text>
-                        </HStack>
-                        <HStack space="7px" h="20px">
-                            <Battery width={15} height={15} />
-                            <Text fontSize="13px" color="#4C4C4C" >
-                                {data.check_in_battery}%
-                            </Text>
-                        </HStack>
+                        {data.status != 'PENDENT' && data.status != 'JUSTIFIED_ABSENCE' &&
+                            <HStack space="7px" mt="15px" h="18px">
+                                <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                                    Check-in:
+                                </Text>
+                                <Text fontSize="13px" color="#4C4C4C" >
+                                    {data.check_in_date}
+                                </Text>
+                            </HStack>
+                        }
+                        {data.status != 'PENDENT' && data.status != 'JUSTIFIED_ABSENCE' &&
+
+                            <HStack space="7px" h="20px">
+                                <Battery width={15} height={15} />
+                                <Text fontSize="13px" color="#4C4C4C" >
+                                    {data.check_in_battery}%
+                                </Text>
+                            </HStack>
+                        }
                         {data.status == 'COMPLETE' &&
                             <>
 
@@ -116,25 +125,92 @@ export const Card = ({ data }: IProps) => {
                             </>
                         }
 
-                        <HStack space="10px" mt="15px" h="105px">
-                            {data.check_in_photo &&
-                                <View style={{ width: 91, height: 91 }}>
-                                    <Lightbox navigator={Navigator}>
-                                        <Image source={{ uri: data.check_in_photo }} style={{ width: '100%', height: '100%' }} />
 
-                                    </Lightbox>
+                        {data.status == 'JUSTIFIED_ABSENCE' &&
+                            <>
+                                <View style={{
+                                    backgroundColor: '#FFEDD5',
+                                    paddingHorizontal: 12,
+                                    paddingVertical: 6,
+                                    borderRadius: 20,
+                                    alignSelf: 'flex-start',
+                                    marginTop: 15,
+                                    marginBottom: 10
+                                }}>
+                                    <Text style={{
+                                        color: '#ea580c',
+                                        fontSize: 12,
+                                        fontWeight: 'bold',
+                                        textAlign: 'center'
+                                    }}>
+                                        Justificado
+                                    </Text>
                                 </View>
-                            }
-                            {data.check_out_photo &&
-                                <View style={{ width: 91, height: 91 }}>
-                                    <Lightbox navigator={Navigator}>
-                                        <Image source={{ uri: data.check_out_photo }} style={{ width: '100%', height: '100%' }} />
 
-                                    </Lightbox>
-                                </View>
-                            }
-                        </HStack>
-                        {data.status != 'PENDENT' &&
+                                {/* Informações da justificativa */}
+                                {data.option_justify && (
+                                    <HStack space="7px" mt="10px" h="18px">
+                                        <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                                            Motivo:
+                                        </Text>
+                                        <Text fontSize="13px" color="#4C4C4C" style={{ flexWrap: 'wrap', flex: 1 }}>
+                                            {data.option_justify}
+                                        </Text>
+                                    </HStack>
+                                )}
+
+                                {data.obs_justify && (
+                                    <HStack space="7px" mt="10px" h="auto">
+                                        <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                                            Observação:
+                                        </Text>
+                                        <Text fontSize="13px" color="#4C4C4C" style={{ flexWrap: 'wrap', flex: 1 }}>
+                                            {data.obs_justify}
+                                        </Text>
+                                    </HStack>
+                                )}
+
+                                {/* Foto da justificativa */}
+                                {data.picture_justify && (
+                                    <View style={{ marginTop: 15 }}>
+                                        <Text fontSize="13px" color="#4C4C4C" fontWeight="bold" mb="10px">
+                                            Foto da justificativa:
+                                        </Text>
+                                        <View style={{ width: 91, height: 91 }}>
+                                            <Lightbox navigator={Navigator}>
+                                                <Image
+                                                    source={{ uri: data.picture_justify }}
+                                                    style={{ width: '100%', height: '100%' }}
+                                                />
+                                            </Lightbox>
+                                        </View>
+                                    </View>
+                                )}
+                            </>
+                        }
+
+                        {data.check_in_photo || data.check_out_photo ?
+                            <HStack space="10px" mt="15px" h="105px">
+                                {data.check_in_photo &&
+                                    <View style={{ width: 91, height: 91 }}>
+                                        <Lightbox navigator={Navigator}>
+                                            <Image source={{ uri: data.check_in_photo }} style={{ width: '100%', height: '100%' }} />
+
+                                        </Lightbox>
+                                    </View>
+                                }
+                                {data.check_out_photo &&
+                                    <View style={{ width: 91, height: 91 }}>
+                                        <Lightbox navigator={Navigator}>
+                                            <Image source={{ uri: data.check_out_photo }} style={{ width: '100%', height: '100%' }} />
+
+                                        </Lightbox>
+                                    </View>
+                                }
+                            </HStack>
+                        : null
+                        }
+                        {data.status != 'PENDENT' && data.status != 'JUSTIFIED_ABSENCE' &&
                             <View style={{ width: '100%', justifyContent: "center", alignItems: "center" }}>
                                 <Button style={{ marginTop: 0, height: 40, width: '100%' }}
                                     onPress={() => router.push({ pathname: './pictures', params: data })}

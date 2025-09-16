@@ -4,6 +4,7 @@ const config = getDefaultConfig(__dirname);
 
 const { transformer, resolver } = config;
 
+// Configurações básicas do Metro
 config.transformer = {
   ...transformer,
   babelTransformerPath: require.resolve('react-native-svg-transformer'),

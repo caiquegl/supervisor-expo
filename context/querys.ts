@@ -76,6 +76,9 @@ query VisitsPromoters($filter: ListVisitsPromotersFilter!) {
     created_at
     check_in_date
     check_out_date
+    obs_justify
+    option_justify
+    picture_justify
   }
 }
 `;
@@ -133,6 +136,9 @@ query GetPromoter($filter: GetPromoterFilter!, $getPromoterId: Int!) {
       check_out_battery
       check_in_photo
       check_out_photo
+      obs_justify
+      option_justify
+      picture_justify
     }
   }
 }

@@ -13,7 +13,7 @@ export const CardVisitByPromoter = ({ selected, navigation }: any) => {
   const { selectedPromoter, filter } = userContext();
   const [dataPromoter, setDataPromoter] = useState<IProsVisitsByPromoter | null>(null);
 
-  const { data, loading, refetch } = useQuery(VISITS_BY_PROMOTER_QUERY, {
+  const { data, loading, refetch, error } = useQuery(VISITS_BY_PROMOTER_QUERY, {
     variables: {
       filter: { dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10) },
       getPromoterId: selectedPromoter?.id,
@@ -38,6 +38,12 @@ export const CardVisitByPromoter = ({ selected, navigation }: any) => {
   }, [data]);
 
   const keyEstractor = useCallback((item: any) => item.id.toString(), []);
+
+  useEffect(() => {
+    if (error) {
+      console.log(error);
+    }
+  }, [error]);
 
   return (
     <Box
@@ -98,7 +104,6 @@ export const CardVisitByPromoter = ({ selected, navigation }: any) => {
                   )
                 }}
                 maxToRenderPerBatch={2}
-                windowSize={5}
               />
             </>
           }

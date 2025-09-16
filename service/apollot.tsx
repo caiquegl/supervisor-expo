@@ -34,6 +34,20 @@ const cache = new InMemoryCache({
             },
         },
     },
+    // Configurações de performance do cache
+    resultCaching: true,
+    canonizeResults: true,
+    // Configurações de memória
+    possibleTypes: {},
+    // Configurações de persistência
+    addTypename: true,
+    // Configurações de performance
+    dataIdFromObject: (object) => {
+        if (object.__typename && object.id) {
+            return `${object.__typename}:${object.id}`;
+        }
+        return null;
+    },
 });
 const persistor = new CachePersistor({
     cache,
@@ -68,6 +82,9 @@ export const useInitializeClient = () => {
                     fetchPolicy: "cache-and-network",
                     errorPolicy: "ignore",
                     notifyOnNetworkStatusChange: false,
+                    // Configurações de performance
+                    pollInterval: 0,
+                    fetchPolicy: "cache-first",
                 },
                 query: {
                     fetchPolicy: "cache-first",
@@ -81,6 +98,12 @@ export const useInitializeClient = () => {
             // Configurações para melhorar performance
             connectToDevTools: false,
             assumeImmutableResults: true,
+            // Configurações de performance adicionais
+            queryDeduplication: true,
+            defaultContext: {
+                // Configurações de timeout
+                timeout: 30000,
+            },
         });
         clientRef.current.onClearStore(async () => {
             await persistor.purge();

@@ -23,7 +23,7 @@ import { apolloContext } from "../../context/apolloContext";
 import { FilterDrawer } from '../../components/ui/FilterDrawer';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { userContext } from '../../context/userContext';
-
+import moment from 'moment';
 
 export default function HomeProgramer() {
   const { setFilter, filter } = userContext();
@@ -40,18 +40,45 @@ export default function HomeProgramer() {
       })()
     : undefined;
 
+  const selectedUserId = filter?.user_id;
+
   // Contar filtros ativos globais
-  const filterCount = filter?.dt_visit ? 1 : 0;
+  const filterCount = [filter?.dt_visit, filter?.user_id].filter(Boolean).length;
 
   // Aplicar filtro
   const handleApplyFilter = () => {
-   
     setDrawerVisible(false);
   };
 
   // Limpar filtro
   const handleClearFilter = () => {
+    setFilter({
+      dt_visit: moment().format('YYYY-MM-DD')
+    });
     setDrawerVisible(false);
+  };
+
+  // Atualizar filtro de data
+  const handleDateChange = (date: Date | undefined) => {
+    console.log('handleDateChange chamado com:', date);
+    console.log('Tipo da data:', typeof date);
+    
+    if (date) {
+      setFilter({ ...filter, dt_visit: moment(date).format('YYYY-MM-DD') });
+    } else {
+      const { dt_visit, ...restFilter } = filter;
+      setFilter(restFilter);
+    }
+  };
+
+  // Atualizar filtro de usuário
+  const handleUserIdChange = (userId: number | undefined) => {
+    if (userId) {
+      setFilter({ ...filter, user_id: userId });
+    } else {
+      const { user_id, ...restFilter } = filter;
+      setFilter(restFilter);
+    }
   };
 
   // Memoizar o componente CardVisitsProgrammer para evitar re-renders desnecessários
@@ -82,7 +109,9 @@ export default function HomeProgramer() {
         <FilterDrawer
           visible={drawerVisible}
           selectedDate={selectedDate}
-          onChangeDate={date => setFilter({ ...filter, dt_visit: date ? date.toISOString().slice(0, 10) : undefined })}
+          onChangeDate={handleDateChange}
+          selectedUserId={selectedUserId}
+          onChangeUserId={handleUserIdChange}
           onApply={handleApplyFilter}
           onClear={handleClearFilter}
           onClose={() => setDrawerVisible(false)}
