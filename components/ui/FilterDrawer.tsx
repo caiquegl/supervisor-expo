@@ -1,6 +1,6 @@
 import moment from 'moment';
 import React from 'react';
-import { Modal, TouchableOpacity, View, Button as RNButton, Text, TextInput, ScrollView } from 'react-native';
+import { Modal, TouchableOpacity, View, Button as RNButton, Text, ScrollView, TextInput, FlatList } from 'react-native';
 import { DatePickerModal } from 'react-native-paper-dates';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useLazyQuery } from '@apollo/client';
@@ -10,10 +10,9 @@ import { userContext } from '@/context/userContext';
 interface FilterDrawerProps {
   visible: boolean;
   selectedDate: Date | undefined;
-  selectedUserId: number | undefined;
-  onChangeDate: (date: any | undefined) => void;
-  onChangeUserId: (userId: number | undefined) => void;
-  onApply: () => void;
+  selectedPromoter: number | undefined;
+  promoterOptions: Array<{ label: string; value: number }>;
+  onApplyFilters: (filters: { date: any | undefined; userId: number | undefined }) => void;
   onClear: () => void;
   onClose: () => void;
 }
@@ -21,74 +20,41 @@ interface FilterDrawerProps {
 export const FilterDrawer: React.FC<FilterDrawerProps> = ({
   visible,
   selectedDate,
-  selectedUserId,
-  onChangeDate,
-  onChangeUserId,
-  onApply,
+  selectedPromoter,
+  promoterOptions,
+  onApplyFilters,
   onClear,
   onClose,
 }) => {
   const [showDatePicker, setShowDatePicker] = React.useState(false);
-  const [showUserPicker, setShowUserPicker] = React.useState(false);
+  const [showPromoterList, setShowPromoterList] = React.useState(false);
   const [internalDate, setInternalDate] = React.useState<Date | undefined>(selectedDate);
-  const [internalUserId, setInternalUserId] = React.useState<number | undefined>(selectedUserId);
-  const [searchText, setSearchText] = React.useState('');
-  const { setFilter, filter } = userContext();
-  
-  // Query para buscar promotores
-  const [loadPromoterOptions, { data: promoterOptionsData, loading: loadingPromoters }] = useLazyQuery(PROMOTER_OPTIONS_QUERY, {
-    fetchPolicy: 'network-only',
-  });
+  const [internalPromoter, setInternalPromoter] = React.useState<number | undefined>(selectedPromoter);
+  const [searchPromoter, setSearchPromoter] = React.useState('');
+  const [filteredPromoters, setFilteredPromoters] = React.useState<Array<{ label: string; value: number }>>([]);
 
-  // Carregar promotores quando o drawer é aberto
+  // Atualiza os valores internos quando o drawer é aberto ou os valores externos mudam
   React.useEffect(() => {
-    if (visible) {
-      loadPromoterOptions();
-    }
-  }, [visible, loadPromoterOptions]);
-
-  // Inicializar valores internos quando o drawer é aberto
-  React.useEffect(() => {
-    if (visible) {
-      
-      
-      
-      
-      // Se não há selectedDate, usar a data atual simples
-      let initialDate = selectedDate;
-      if (!selectedDate) {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = today.getMonth();
-        const day = today.getDate();
-        initialDate = new Date(year, month, day);
-        
-      }
-      
-      setInternalDate(initialDate);
-      setInternalUserId(selectedUserId);
-      
-      
-      
-      
-    }
-  }, [visible]);
-
-  // Atualiza o valor interno quando o drawer é aberto ou os valores mudam
-  React.useEffect(() => {
-    
-    
-    
-    
     if (visible) {
       setInternalDate(selectedDate);
-      setInternalUserId(selectedUserId);
-      
-      
-      
-      
+      setInternalPromoter(selectedPromoter);
+      setSearchPromoter(getPromoterLabel(selectedPromoter));
+      setFilteredPromoters(promoterOptions);
+      setShowPromoterList(false);
     }
-  }, [visible, selectedDate, selectedUserId]);
+  }, [visible, selectedDate, selectedPromoter, promoterOptions]);
+
+  // Filtra promotores baseado na pesquisa
+  React.useEffect(() => {
+    if (searchPromoter.trim() === '') {
+      setFilteredPromoters(promoterOptions);
+    } else {
+      const filtered = promoterOptions.filter(promoter =>
+        promoter.label.toLowerCase().includes(searchPromoter.toLowerCase())
+      );
+      setFilteredPromoters(filtered);
+    }
+  }, [searchPromoter, promoterOptions]);
 
   const handleConfirmDate = (params: { date: Date | undefined }) => {
     
@@ -111,56 +77,45 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
     }
   };
 
+  const handlePromoterSelect = (promoter: { label: string; value: number }) => {
+    setInternalPromoter(promoter.value);
+    setSearchPromoter(promoter.label);
+    setShowPromoterList(false);
+  };
+
+  const handlePromoterInputPress = () => {
+    setShowPromoterList(!showPromoterList);
+    if (!showPromoterList) {
+      setSearchPromoter('');
+      setFilteredPromoters(promoterOptions);
+    }
+  };
+
   const handleApply = () => {
-    let newFilter = {...filter }
-    if(internalDate) newFilter.dt_visit = moment(internalDate).format('YYYY-MM-DD')
-    if(internalUserId) newFilter.user_id = internalUserId
-    
-    setFilter({...newFilter})
-    // Garantir que onChangeDate seja chamado com o valor correto
- 
-    // Fechar o drawer
-    onApply();
+    // Envia todos os filtros de uma vez
+    const newDate = internalDate ? moment(internalDate).format('YYYY-MM-DD') : undefined;
+    onApplyFilters({
+      date: newDate,
+      userId: internalPromoter
+    });
   };
 
   const handleClear = () => {
+    // Reseta estado interno
+    setInternalDate(moment().toDate());
+    setInternalPromoter(undefined);
+    setSearchPromoter('');
+    setShowPromoterList(false);
     
-    
-    // Criar uma data simples para hoje
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
-    const day = today.getDate();
-    const simpleToday = new Date(year, month, day);
-    
-    
-    
-    
-    setInternalDate(simpleToday);
-    setInternalUserId(undefined);
-    onChangeDate(simpleToday);
-    onChangeUserId(undefined);
+    // Limpa filtros externos
     onClear();
   };
 
-  // Filtrar promotores baseado no texto de busca
-  const filteredPromoters = React.useMemo(() => {
-    if (!promoterOptionsData?.getPromoterOptions) return [];
-    
-    if (!searchText.trim()) {
-      return promoterOptionsData.getPromoterOptions;
-    }
-    
-    return promoterOptionsData.getPromoterOptions.filter((promoter: any) =>
-      promoter.label.toLowerCase().includes(searchText.toLowerCase())
-    );
-  }, [promoterOptionsData, searchText]);
-
-  // Encontrar o promotor selecionado
-  const selectedPromoter = React.useMemo(() => {
-    if (!internalUserId || !promoterOptionsData?.getPromoterOptions) return null;
-    return promoterOptionsData.getPromoterOptions.find((promoter: any) => promoter.value === internalUserId);
-  }, [internalUserId, promoterOptionsData]);
+  const getPromoterLabel = (promoterId: number | undefined) => {
+    if (!promoterId) return '';
+    const promoter = promoterOptions.find(p => p.value === promoterId);
+    return promoter ? promoter.label : '';
+  };
 
   return (
     <Modal
@@ -176,10 +131,10 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             <Icon name="close" size={28} color="#222" />
           </TouchableOpacity>
           
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 18, color: '#222', marginTop: 8 }}>Filtrar</Text>
+          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 18, color: '#222', marginTop: 8 }}>Filtros</Text>
           
-          {/* Filtro por data */}
-          <Text style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 8, color: '#666' }}>Data</Text>
+          {/* Filtro de Data */}
+          <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 12, color: '#333' }}>Data</Text>
           <TouchableOpacity onPress={() => setShowDatePicker(true)} style={{ borderWidth: 1, borderColor: '#ccc', borderRadius: 6, padding: 10, marginBottom: 24 }}>
             <Text>
               {internalDate
@@ -188,90 +143,82 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             </Text>
           </TouchableOpacity>
 
-          {/* Filtro por usuário */}
-          <Text style={{ fontSize: 14, fontWeight: 'bold', marginBottom: 8, color: '#666' }}>Promotor</Text>
-          <TouchableOpacity 
-            onPress={() => setShowUserPicker(!showUserPicker)} 
-            style={{ 
-              borderWidth: 1, 
-              borderColor: '#ccc', 
-              borderRadius: 6, 
-              padding: 10, 
-              marginBottom: showUserPicker ? 0 : 24,
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center'
-            }}
-          >
-            <Text style={{ flex: 1 }}>
-              {selectedPromoter ? selectedPromoter.label : 'Selecione o promotor'}
-            </Text>
-            <Icon name={showUserPicker ? "keyboard-arrow-up" : "keyboard-arrow-down"} size={20} color="#666" />
+          {/* Filtro de Promotor */}
+          <Text style={{ fontSize: 16, fontWeight: '600', marginBottom: 12, color: '#333' }}>Promotor</Text>
+          
+          {/* Campo de seleção de promotor */}
+          <TouchableOpacity onPress={handlePromoterInputPress} style={{
+            borderWidth: 1,
+            borderColor: '#ccc',
+            borderRadius: 10,
+            backgroundColor: '#fff',
+            marginBottom: 20,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingRight: 10
+          }}>
+            <TextInput
+              value={searchPromoter}
+              onChangeText={setSearchPromoter}
+              placeholder="Selecione um promotor..."
+              style={{
+                padding: 10,
+                color: '#2E2F34',
+                fontSize: 16,
+                flex: 1,
+              }}
+              editable={showPromoterList}
+              onFocus={() => setShowPromoterList(true)}
+            />
+            <Icon 
+              name={showPromoterList ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+              size={24} 
+              color="#8f8f8f" 
+            />
           </TouchableOpacity>
 
-          {/* Dropdown de promotores */}
-          {showUserPicker && (
-            <View style={{ 
-              borderWidth: 1, 
-              borderColor: '#ccc', 
-              borderRadius: 6, 
+          {/* Lista dropdown de promotores (só aparece quando aberta) */}
+          {showPromoterList && filteredPromoters.length > 0 && (
+            <View style={{
+              maxHeight: 200,
               marginBottom: 24,
-              maxHeight: 200
+              backgroundColor: '#fff',
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor: '#e0e0e0',
+              position: 'relative',
+              zIndex: 1000,
+              elevation: 5,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.25,
+              shadowRadius: 3.84,
             }}>
-              <TextInput
-                placeholder="Buscar promotor..."
-                value={searchText}
-                onChangeText={setSearchText}
-                style={{ 
-                  padding: 10, 
-                  borderBottomWidth: 1, 
-                  borderBottomColor: '#eee',
-                  fontSize: 14
-                }}
-              />
-              <ScrollView style={{ maxHeight: 150 }}>
-                {loadingPromoters ? (
-                  <View style={{ padding: 20, alignItems: 'center' }}>
-                    <Text style={{ color: '#666' }}>Carregando...</Text>
-                  </View>
-                ) : (
-                  <>
-                    <TouchableOpacity
-                      onPress={() => {
-                        setInternalUserId(undefined);
-                        setShowUserPicker(false);
-                        setSearchText('');
-                      }}
-                      style={{ 
-                        padding: 12, 
-                        borderBottomWidth: 1, 
-                        borderBottomColor: '#eee',
-                        backgroundColor: internalUserId === undefined ? '#f0f0f0' : 'transparent'
-                      }}
-                    >
-                      <Text style={{ color: '#666', fontStyle: 'italic' }}>Todos os promotores</Text>
-                    </TouchableOpacity>
-                    {filteredPromoters.map((promoter: any) => (
-                      <TouchableOpacity
-                        key={promoter.value}
-                        onPress={() => {
-                          setInternalUserId(promoter.value);
-                          setShowUserPicker(false);
-                          setSearchText('');
-                        }}
-                        style={{ 
-                          padding: 12, 
-                          borderBottomWidth: 1, 
-                          borderBottomColor: '#eee',
-                          backgroundColor: internalUserId === promoter.value ? '#f0f0f0' : 'transparent'
-                        }}
-                      >
-                        <Text style={{ color: '#222' }}>{promoter.label}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </>
+              <FlatList
+                style={{ flexGrow: 0 }}
+                data={filteredPromoters}
+                keyExtractor={(item) => item.value.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => handlePromoterSelect(item)}
+                    style={{
+                      padding: 10,
+                      borderBottomWidth: 1,
+                      borderBottomColor: '#f0f0f0',
+                      backgroundColor: internalPromoter === item.value ? '#f0e6ff' : '#fff',
+                    }}
+                  >
+                    <Text style={{ 
+                      fontSize: 16,
+                      color: internalPromoter === item.value ? '#6600CC' : '#2E2F34',
+                      fontWeight: internalPromoter === item.value ? '600' : '400'
+                    }}>
+                      {item.label}
+                    </Text>
+                  </TouchableOpacity>
                 )}
-              </ScrollView>
+              />
             </View>
           )}
 
@@ -286,13 +233,13 @@ export const FilterDrawer: React.FC<FilterDrawerProps> = ({
             label="Selecione a data"
             animationType="slide"
           />
-          
+
           {/* Botão aplicar filtro */}
-          <RNButton title="Aplicar filtro" onPress={handleApply} color="#6600CC" />
+          <RNButton title="Aplicar filtros" onPress={handleApply} color="#6600CC" />
           
-          {/* Botão limpar filtro */}
+          {/* Botão limpar filtros */}
           <TouchableOpacity onPress={handleClear} style={{ marginTop: 12, alignSelf: 'center' }}>
-            <Text style={{ color: '#CC0066', fontWeight: 'bold' }}>Limpar filtro</Text>
+            <Text style={{ color: '#CC0066', fontWeight: 'bold' }}>Limpar filtros</Text>
           </TouchableOpacity>
         </View>
       </View>

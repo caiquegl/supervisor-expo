@@ -27,7 +27,14 @@ import moment from 'moment';
 
 export default function HomeProgramer() {
   const { setFilter, filter } = userContext();
+  const { promoterOptionsData, loadPromoterOptionsVoid } = apolloContext();
   const [drawerVisible, setDrawerVisible] = React.useState(false);
+  const [selectedPromoter, setSelectedPromoter] = React.useState<number | undefined>(filter?.user_id);
+
+  // Carregar opções de promotores quando o componente montar
+  useEffect(() => {
+    loadPromoterOptionsVoid();
+  }, []);
 
   // Sincronizar valor do filtro global para o drawer
   const selectedDate = filter?.dt_visit
@@ -45,16 +52,30 @@ export default function HomeProgramer() {
   // Contar filtros ativos globais
   const filterCount = [filter?.dt_visit, filter?.user_id].filter(Boolean).length;
 
-  // Aplicar filtro
-  const handleApplyFilter = () => {
+  // Função unificada para aplicar filtros
+  const handleApplyFilters = (filters: { date: any | undefined; userId: number | undefined }) => {
+    // Atualiza o filtro global com todos os valores de uma vez
+    const newFilter = {
+      ...filter,
+      dt_visit: filters.date,
+      user_id: filters.userId
+    };
+    
+    setFilter(newFilter);
+    setSelectedPromoter(filters.userId);
     setDrawerVisible(false);
   };
 
-  // Limpar filtro
-  const handleClearFilter = () => {
-    setFilter({
-      dt_visit: moment().format('YYYY-MM-DD')
-    });
+  // Função para limpar filtros
+  const handleClearFilters = () => {
+    setSelectedPromoter(undefined);
+    const clearedFilter = {
+      ...filter,
+      user_id: undefined,
+      dt_visit: undefined
+    };
+    
+    setFilter(clearedFilter);
     setDrawerVisible(false);
   };
 
@@ -109,11 +130,10 @@ export default function HomeProgramer() {
         <FilterDrawer
           visible={drawerVisible}
           selectedDate={selectedDate}
-          onChangeDate={handleDateChange}
-          selectedUserId={selectedUserId}
-          onChangeUserId={handleUserIdChange}
-          onApply={handleApplyFilter}
-          onClear={handleClearFilter}
+          selectedPromoter={selectedPromoter}
+          promoterOptions={promoterOptionsData}
+          onApplyFilters={handleApplyFilters}
+          onClear={handleClearFilters}
           onClose={() => setDrawerVisible(false)}
         />
         <ContainerBody style={{ marginTop: 20, flex: 1 }}>

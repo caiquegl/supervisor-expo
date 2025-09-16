@@ -30,9 +30,15 @@ import { FilterDrawer } from '../../components/ui/FilterDrawer';
 import moment from "moment";
 
 export default function PromotersComponent() {
-  const { listPromoter } = apolloContext();
+  const { listPromoter, promoterOptionsData, loadPromoterOptionsVoid } = apolloContext();
   const { setFilter, filter } = userContext();
   const [drawerVisible, setDrawerVisible] = useState(false);
+  const [selectedPromoter, setSelectedPromoter] = useState<number | undefined>(filter?.user_id);
+
+  // Carregar opções de promotores quando o componente montar
+  useEffect(() => {
+    loadPromoterOptionsVoid();
+  }, []);
 
   // Sincronizar valor do filtro global para o campo de busca
   const valueSearch = filter?.name || '';
@@ -58,24 +64,52 @@ export default function PromotersComponent() {
 
   // Otimização: useMemo para filtrar dados apenas quando necessário
   const dataDash = useMemo(() => {
-    if (!filter?.name?.trim()) {
-      return listPromoter;
+    let filteredData = listPromoter;
+    
+    // Filtro por nome
+    if (filter?.name?.trim()) {
+      filteredData = filteredData.filter((el) =>
+        el.name.toLowerCase().includes(filter.name.toLowerCase())
+      );
     }
-    return listPromoter.filter((el) =>
-      el.name.toLowerCase().includes(filter.name.toLowerCase())
-    );
-  }, [listPromoter, filter.name]);
+    
+    // Filtro por promotor (se implementado no backend)
+    if (filter?.user_id) {
+      // Aqui você pode implementar a lógica de filtro por promotor
+      // Por enquanto, apenas retornamos os dados filtrados por nome
+    }
+    
+    return filteredData;
+  }, [listPromoter, filter.name, filter.user_id]);
 
-  // Aplicar filtro
-  const handleApplyFilter = () => {
+  // Função unificada para aplicar filtros
+  const handleApplyFilters = (filters: { date: any | undefined; userId: number | undefined }) => {
+    // Atualiza o filtro global com todos os valores de uma vez
+    const newFilter = {
+      ...filter,
+      dt_visit: filters.date,
+      user_id: filters.userId
+    };
+    
+    console.log('Aplicando filtros:', filters);
+    console.log('Novo filtro completo:', newFilter);
+    
+    setFilter(newFilter);
+    setSelectedPromoter(filters.userId);
     setDrawerVisible(false);
   };
 
-  // Limpar filtro
-  const handleClearFilter = () => {
-    setFilter({
+  // Função para limpar filtros
+  const handleClearFilters = () => {
+    setSelectedPromoter(undefined);
+    const clearedFilter = {
+      ...filter,
+      user_id: undefined,
       dt_visit: moment().format('YYYY-MM-DD')
-    });
+    };
+    
+    console.log('Limpando filtros:', clearedFilter);
+    setFilter(clearedFilter);
     setDrawerVisible(false);
   };
 
@@ -122,11 +156,10 @@ export default function PromotersComponent() {
         <FilterDrawer
           visible={drawerVisible}
           selectedDate={selectedDate}
-          onChangeDate={handleDateChange}
-          selectedUserId={selectedUserId}
-          onChangeUserId={handleUserIdChange}
-          onApply={handleApplyFilter}
-          onClear={handleClearFilter}
+          selectedPromoter={selectedPromoter}
+          promoterOptions={promoterOptionsData}
+          onApplyFilters={handleApplyFilters}
+          onClear={handleClearFilters}
           onClose={() => setDrawerVisible(false)}
         />
         <ContainerIconCenter>

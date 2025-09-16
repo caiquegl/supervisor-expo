@@ -19,7 +19,7 @@ import { Image } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { View } from 'react-native';
 import { userContext } from '../../context/userContext';
-import { useMutation, gql } from "@apollo/client";
+import { useMutation, gql, ApolloError } from "@apollo/client";
 import { theme } from '@/theme';
 import { router } from 'expo-router';
 import * as Updates from 'expo-updates';
@@ -93,15 +93,40 @@ export default function Sigin() {
           setAlert(true);
         }
       }).catch((error) => {
-        setMsgErro('Erro ao fazer login. Usuário ou senha inválidos');
+
+        let message = 'Ocorreu um erro inesperado. Tente novamente.';
+
+        if (error instanceof ApolloError) {
+          // Erro de rede (sem internet, falha no servidor, timeout)
+          if (error.networkError) {
+            if (error.networkError.message.includes('Failed to fetch')) {
+              message = 'Sem conexão com a internet. Verifique sua rede.';
+            } else if (error.networkError.message.includes('Network request failed')) {
+              message = 'Falha na conexão com o servidor. Tente novamente.';
+            } else {
+              message = 'Erro de rede. Tente novamente mais tarde.';
+            }
+          }
+
+          // Erro retornado pela API GraphQL
+          else if (error.graphQLErrors.length > 0) {
+            message = error.graphQLErrors[0].message || 'Erro no servidor.';
+          }
+        } else if (error.message && error.message.includes('timeout')) {
+          message = 'Tempo de conexão esgotado. Tente novamente.';
+        }
+
+        setMsgErro(message);
         setAlert(true);
+        setIsLoading(false);
+
       });
     } catch (error) {
       setMsgErro('Login inválido');
       setAlert(true);
       setIsLoading(false);
     }
-    
+
   };
 
   useEffect(() => {
@@ -111,67 +136,67 @@ export default function Sigin() {
 
   return (
 
-      <Container>
-        {/* <ContainerBG>
+    <Container>
+      {/* <ContainerBG>
           <Image source={Bg} />
         </ContainerBG> */}
 
-        <ContainerIcon>
-          <Image source={Logo} />
-          <TextLogo>Rock-At.</TextLogo>
-        </ContainerIcon>
-        <Body>
-          {/* <LogoPromoter height={135} width={200} /> */}
-          <BigText>Teams</BigText>
-          <ContainerInput style={{ marginBottom: 75 }}>
-            <Label>CPF</Label>
-            <InputMask value={cpf} type="cpf" onChangeText={setCpf} />
-          </ContainerInput>
-          <ContainerInput>
-            <Label>Senha</Label>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Input
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry={security}
-              />
-              <TouchableHighlight
-                style={{
-                  position: 'absolute',
-                  left: '85%',
-                  padding: 10,
-                }}
-                underlayColor="transparent"
-                onPress={() => {
-                  if (iconSecutiry === 'eye') setIconSecutiry('eye-off');
-                  if (iconSecutiry === 'eye-off') setIconSecutiry('eye');
-                  setSecurity(!security);
-                }}>
-                <Icon name={iconSecutiry} size={24} color={'#fff'} />
-              </TouchableHighlight>
-            </View>
-          </ContainerInput>
-          <Button
-            onPress={() => handleRegister()}
-            underlayColor="none"
-            activeOpacity={0.2}>
-            {loading ? (
-              <ActivityIndicator color={theme.colors.primary} />
-            ) : (
-              <TextButton>ENTRAR</TextButton>
-            )}
-          </Button>
-        </Body>
-        {alert && (
-          <ModalAlert
-            visible={alert}
-            closeAlert={(close: any) => setAlert(close)}
-            icon="error"
-            title="Erro ao fazer login"
-            msg={msgErro}
-          />
-        )}
-      </Container>
+      <ContainerIcon>
+        <Image source={Logo} />
+        <TextLogo>Rock-At.</TextLogo>
+      </ContainerIcon>
+      <Body>
+        {/* <LogoPromoter height={135} width={200} /> */}
+        <BigText>Teams</BigText>
+        <ContainerInput style={{ marginBottom: 75 }}>
+          <Label>CPF</Label>
+          <InputMask value={cpf} type="cpf" onChangeText={setCpf} />
+        </ContainerInput>
+        <ContainerInput>
+          <Label>Senha</Label>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Input
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry={security}
+            />
+            <TouchableHighlight
+              style={{
+                position: 'absolute',
+                left: '85%',
+                padding: 10,
+              }}
+              underlayColor="transparent"
+              onPress={() => {
+                if (iconSecutiry === 'eye') setIconSecutiry('eye-off');
+                if (iconSecutiry === 'eye-off') setIconSecutiry('eye');
+                setSecurity(!security);
+              }}>
+              <Icon name={iconSecutiry} size={24} color={'#fff'} />
+            </TouchableHighlight>
+          </View>
+        </ContainerInput>
+        <Button
+          onPress={() => handleRegister()}
+          underlayColor="none"
+          activeOpacity={0.2}>
+          {loading ? (
+            <ActivityIndicator color={theme.colors.primary} />
+          ) : (
+            <TextButton>ENTRAR</TextButton>
+          )}
+        </Button>
+      </Body>
+      {alert && (
+        <ModalAlert
+          visible={alert}
+          closeAlert={(close: any) => setAlert(close)}
+          icon="error"
+          title="Erro ao fazer login"
+          msg={msgErro}
+        />
+      )}
+    </Container>
 
   );
 };

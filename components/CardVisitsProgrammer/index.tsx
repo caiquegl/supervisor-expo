@@ -7,12 +7,13 @@ import Pendent from '../../assets/icon/clock-pendent.svg'
 import Complete from '../../assets/icon/check-circle.svg'
 import Inprogress from '../../assets/icon/check-circle-progress.svg'
 import { TouchableOpacity, View, FlatList, ActivityIndicator, Image } from 'react-native'
-import { useQuery, useLazyQuery } from "@apollo/client";
+import { useLazyQuery, useQuery } from "@apollo/client";
 import { VISITS_PROGRAMER_QUERY } from "../../context/querys";
 import { userContext } from "../../context/userContext";
 import { Button } from "@/styles/style.sigin";
 import { router } from "expo-router";
 import moment from "moment";
+import { Ionicons } from "@expo/vector-icons";
 import Lightbox from "react-native-lightbox-v2";
 
 export const CardVisitsProgrammer = () => {
@@ -26,8 +27,6 @@ export const CardVisitsProgrammer = () => {
   useEffect(() => {
     setSkip(0);
     setVisitsProgrammer([]);
-    setIsInitialLoad(true);
-    setHasMoreData(true); // Reset do estado de mais dados
   }, [filter]);
 
   const { data, loading, error } = useQuery(VISITS_PROGRAMER_QUERY, {
@@ -122,6 +121,12 @@ export const CardVisitsProgrammer = () => {
           return <Inprogress width="20px" height="20px" />;
         case 'COMPLETE':
           return <Complete width="20px" height="20px" />;
+        case 'COMPLETE':
+          return <Ionicons
+            name="close-circle"
+            size={20}
+            color="rgb(255, 128, 66)"
+          />;
         default:
           return null;
       }
@@ -185,7 +190,7 @@ export const CardVisitsProgrammer = () => {
             </Text>
           </HStack>
 
-          {visit.status != 'JUSTIFIED_ABSENCE' &&
+          {visit.status == 'IN_PROGRESS' || visit.status == 'COMPLETE' && (
             <View style={{ flexDirection: 'row' }}>
               <HStack space="7px" mt="15px" h="18px">
                 <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
@@ -205,72 +210,47 @@ export const CardVisitsProgrammer = () => {
                 </Text>
               </HStack>
             </View>
-          }
+          )}
 
-          {visit.status == 'JUSTIFIED_ABSENCE' &&
+          {visit.status === 'JUSTIFIED_ABSENCE' &&
             <>
-              <View style={{
-                backgroundColor: '#FFEDD5',
-                paddingHorizontal: 12,
-                paddingVertical: 6,
-                borderRadius: 20,
-                alignSelf: 'flex-start',
-                marginTop: 15,
-                marginBottom: 10
-              }}>
-                <Text style={{
-                  color: '#ea580c',
-                  fontSize: 12,
-                  fontWeight: 'bold',
-                  textAlign: 'center'
-                }}>
-                  Justificado
-                </Text>
+              <View style={{ marginTop: 10, backgroundColor: '#fae7c9', padding: 10, borderRadius: 20, marginBottom: 10, alignItems: 'center', justifyContent: 'center', maxWidth: 100 }}>
+                <Text style={{ color: 'rgb(255, 128, 66)', fontSize: 14, fontWeight: 'bold' }}>Justificado</Text>
               </View>
-
-              {/* Informações da justificativa */}
-              {visit.option_justify && (
-                <HStack space="7px" mt="10px" h="18px">
-                  <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
-                    Motivo:
-                  </Text>
-                  <Text fontSize="13px" color="#4C4C4C" style={{ flexWrap: 'wrap', flex: 1 }}>
-                    {visit.option_justify}
-                  </Text>
-                </HStack>
-              )}
-
+              <HStack space="7px" mt="15px" h="18px">
+                <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
+                  Motivo:
+                </Text>
+                <Text fontSize="13px" color="#4C4C4C" >
+                  {visit.option_justify || 'Não informado'}
+                </Text>
+              </HStack>
               {visit.obs_justify && (
-                <HStack space="7px" mt="10px" h="auto">
+                <HStack space="7px" mt="15px" h="18px">
                   <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
                     Observação:
                   </Text>
-                  <Text fontSize="13px" color="#4C4C4C" style={{ flexWrap: 'wrap', flex: 1 }}>
+                  <Text fontSize="13px" color="#4C4C4C" >
                     {visit.obs_justify}
                   </Text>
                 </HStack>
               )}
-
-              {/* Foto da justificativa */}
               {visit.picture_justify && (
-                <View style={{ marginTop: 15 }}>
-                  <Text fontSize="13px" color="#4C4C4C" fontWeight="bold" mb="10px">
+                <HStack space="7px" mt="15px" h="18px">
+                  <Text fontSize="13px" color="#4C4C4C" fontWeight="bold">
                     Foto da justificativa:
                   </Text>
                   <View style={{ width: 91, height: 91 }}>
                     <Lightbox navigator={Navigator}>
-                      <Image
-                        source={{ uri: data.picture_justify }}
-                        style={{ width: '100%', height: '100%' }}
-                      />
+                      <Image source={{ uri: visit.picture_justify }} style={{ width: '100%', height: '100%' }} />
                     </Lightbox>
                   </View>
-                </View>
+                </HStack>
               )}
             </>
           }
 
-          {visit.status !== 'PENDENT' && visit.status != 'JUSTIFIED_ABSENCE' && (
+          {visit.status == 'IN_PROGRESS' || visit.status == 'COMPLETE' && (
             <View style={{ width: '100%', justifyContent: "center", alignItems: "center", marginTop: 10 }}>
               <Button
                 style={{ marginTop: 0, height: 30, width: '100%' }}

@@ -11,7 +11,11 @@ export const CardVisits = () => {
   const { filter } = userContext();
   const { data, loading } = useQuery(VISITS_QUERY, {
     variables: {
-      filter: { ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10) },
+      filter: { 
+        ...filter, 
+        dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10),
+        user_id: filter?.user_id || undefined, // Corrigido para user_id
+      },
     },
     fetchPolicy: 'network-only',
   });
