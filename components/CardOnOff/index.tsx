@@ -5,87 +5,108 @@ import UserCheck from '../../assets/icon/user-check.svg'
 import UserTime from '../../assets/icon/user-times-red.svg'
 import { useQuery } from "@apollo/client";
 import { ON_OFF_QUERY } from "../../context/querys";
-import { userContext } from "../../context/userContext";
+import { View } from "react-native";
 
-export const CardOnOff = memo(() => {
-  const { filter } = userContext();
-  const { data, loading } = useQuery(ON_OFF_QUERY, {
-    variables: {
-      filter: { ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10) },
-    },
-    fetchPolicy: 'network-only',
-  });
-
+export const CardOnOff = memo(({data, loading, error}: any) => {
+ 
   const onOff = data?.countPromoterDash || {};
   const isLoading = loading || !onOff || Object.keys(onOff).length === 0;
+  
+  const total = (onOff?.count_with_check_in || 0) + (onOff?.count_without_check_in || 0);
+  const availablePercentage = total > 0 ? ((onOff?.count_with_check_in || 0) / total) * 100 : 0;
+  const unavailablePercentage = total > 0 ? ((onOff?.count_without_check_in || 0) / total) * 100 : 0;
 
   return (
     <Box
       bg="#fff"
       borderRadius="33px"
-      paddingX="21px"
       paddingY="19px"
     >
       <Flex alignItems="center" justifyContent="space-between" direction="row">
-        <Text color="#2e2f34" fontSize="18px" textTransform="uppercase" fontWeight="700">PROMOTORES ON/OFF</Text>
+        <Text color="#2e2f34" fontSize="18px" textTransform="uppercase" fontWeight="700">Status da Equipe</Text>
       </Flex>
-      <Flex
-        alignItems="center"
-        justifyContent="space-between"
-        mt="26px"
-        mb="26px"
-        direction="row"
-      >
-        <Flex
-          borderRadius="12px"
-          borderWidth="1px"
-          borderColor="#6600CC"
-          padding="10px 14px"
-          alignItems="center"
-          justifyContent="center"
-          minHeight="53px"
-          minWidth="121px"
-          backgroundColor="#F8F1FF"
-          direction="row"
-        >
-          <UserCheck width={25} height={25} />
-          <Box ml="10px">
-            {isLoading ? <Spinner color="indigo.500" /> :
-              <Text color="#6600CC" fontSize="22px" fontWeight="700" textAlign="center">
-                {onOff?.count_with_check_in || 0}
-              </Text>
-            }
-            <Text color="#6600CC" fontSize="11px" textAlign="center">
-              Disponíveis
-            </Text>
-          </Box>
+      
+      {isLoading ? (
+        /* Loading do Status da Equipe */
+        <Flex direction="column" alignItems="center" mt="20px" mb="20px">
+          <Spinner color="indigo.500" size="sm" mb="10px" />
+          <Text color="gray.500" fontSize="14px">
+            Carregando informações...
+          </Text>
         </Flex>
-        <Flex
-          borderRadius="12px"
-          borderWidth="1px"
-          borderColor="#FF0001"
-          padding="10px 14px"
-          alignItems="center"
-          justifyContent="center"
-          minHeight="53px"
-          minWidth="121px"
-          backgroundColor="#FFF2F2"
-          direction="row"
-        >
-          <UserTime width={25} height={25} />
+      ) : error ? (
+        /* Erro do Status da Equipe */
+        <Flex direction="column" alignItems="center" mt="20px" mb="20px">
+          <Text color="red.500" fontSize="14px" textAlign="center">
+            Erro ao carregar status da equipe
+          </Text>
+        </Flex>
+      ) : (
+        <>
+          {/* Indicadores acima da barra */}
+          <Flex direction="row" justifyContent="space-between" mt="20px" mb="10px">
+            <Flex direction="row" alignItems="center">
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: '#22C55E',
+                  marginRight: 6,
+                }}
+              />
+              <Text color="#2E2F34" fontSize="12px" fontWeight="500">
+                Disponíveis: {onOff?.count_with_check_in || 0}
+              </Text>
+            </Flex>
+            
+            <Flex direction="row" alignItems="center">
+              <View
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: '#EF4444',
+                  marginRight: 6,
+                }}
+              />
+              <Text color="#2E2F34" fontSize="12px" fontWeight="500">
+                Indisponíveis: {onOff?.count_without_check_in || 0}
+              </Text>
+            </Flex>
+          </Flex>
 
-          <Box ml="10px">
-            {isLoading ? <Spinner color="indigo.500" /> :
-              <Text color="#FF0001" fontSize="22px" fontWeight="700" textAlign="center">
-                {onOff?.count_without_check_in || 0}
-              </Text>
-            }
-            <Text color="#FF0001" fontSize="11px" textAlign="center">
-              Indisponíveis
-            </Text>
+          {/* Barra de Progresso Horizontal */}
+          <Box mb="20px">
+            <View
+              style={{
+                height: 10,
+                backgroundColor: '#E5E7EB',
+                borderRadius: 10,
+                overflow: 'hidden',
+                flexDirection: 'row',
+              }}
+            >
+              {/* Parte Verde - Disponíveis */}
+              <View
+                style={{
+                  width: `${availablePercentage}%`,
+                  backgroundColor: '#22C55E',
+                  height: '100%',
+                }}
+              />
+              {/* Parte Vermelha - Indisponíveis */}
+              <View
+                style={{
+                  width: `${unavailablePercentage}%`,
+                  backgroundColor: '#EF4444',
+                  height: '100%',
+                }}
+              />
+            </View>
           </Box>
-        </Flex>
-      </Flex>
+        </>
+      )}
     </Box>
   );
 });

@@ -200,3 +200,4 @@ maxToRenderPerBatch={8}         // Lotes maiores
 ---
 
 **🎯 Solução**: Configurações de performance balanceadas + cache otimizado + tratamento de erros = Imagens sempre visíveis! 🚀
+

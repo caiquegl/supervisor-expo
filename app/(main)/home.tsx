@@ -59,8 +59,7 @@ export default function Home() {
         <ContainerIconCenter>
           <CirculeUser name={user.name[0]} />
           <ContainerText>
-            <TextName>Olá {user.name}</TextName>
-            <TextNameSmall>Seja bem-vindo (a)</TextNameSmall>
+            <TextName>Olá, {user.name.includes(' ') ? user.name.split(' ')[0] : user.name}</TextName>
           </ContainerText>
         </ContainerIconCenter>
         <ContainerBody>
@@ -79,9 +78,9 @@ export default function Home() {
               >
                 <TitlePage>DASHBOARD</TitlePage>
               </View>
+              <MemoizedCardVisits />
               <MemoizedCardColaboradores />
               <MemoizedCardStore />
-              <MemoizedCardVisits />
               {/* <CardForms /> */}
             </View>
           </ScrollView>

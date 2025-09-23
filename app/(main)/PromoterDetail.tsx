@@ -39,9 +39,9 @@ export default function PromoterDetail() {
         if (typeof filter.dt_visit === 'string') {
           const [year, month, day] = filter.dt_visit.split('-').map(Number);
           const simpleDate = new Date(year, month - 1, day);
-          console.log('selectedDate calculado simples:', simpleDate);
-          console.log('filter.dt_visit:', filter.dt_visit);
-          console.log('year, month, day:', year, month, day);
+          
+          
+          
           return simpleDate;
         }
         return undefined;
@@ -50,10 +50,10 @@ export default function PromoterDetail() {
 
   const selectedUserId = filter?.user_id;
 
-  console.log('PromoterDetail renderizado:');
-  console.log('filter:', filter);
-  console.log('selectedDate final:', selectedDate);
-  console.log('selectedUserId:', selectedUserId);
+  
+  
+  
+  
 
   // Contar filtros ativos globais
   const filterCount = [filter?.dt_visit, filter?.user_id].filter(Boolean).length;
@@ -87,16 +87,16 @@ export default function PromoterDetail() {
 
   // Atualizar filtro de data
   const handleDateChange = (date: any) => {
-    console.log('handleDateChange chamado com:', date);
-    console.log('Tipo da data:', typeof date);
+    
+    
     
     if (date) {
       // Usar moment para garantir consistência de timezone
       const formattedDate = moment(date).format('YYYY-MM-DD');
-      console.log('Data formatada:', formattedDate);
+      
       setFilter({ ...filter, dt_visit: formattedDate });
     } else {
-      console.log('Data é null/undefined, removendo dt_visit do filtro');
+      
       const { dt_visit, ...restFilter } = filter;
       setFilter(restFilter);
     }
@@ -115,36 +115,8 @@ export default function PromoterDetail() {
   return (
     <View style={{ flex: 1 }}>
       <Container colors={theme.colors.primary}>
+
         <ActionsHeader>
-          <ContainerIconPrimary>
-            <LogoPromoter width={35} height={35} />
-            <TextLogo>Teams</TextLogo>
-          </ContainerIconPrimary>
-          {/* Botão de filtro com badge */}
-          <View style={{ position: 'relative', marginLeft: 'auto', marginRight: 12 }}>
-            <TouchableOpacity onPress={() => setDrawerVisible(true)}>
-              <Icon name="filter-list" size={28} color="#fff" />
-              {filterCount > 0 && (
-                <View style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#CC0066', borderRadius: 8, minWidth: 16, height: 16, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 4 }}>
-                  <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>{filterCount}</Text>
-                </View>
-              )}
-            </TouchableOpacity>
-          </View>
-        </ActionsHeader>
-        <FilterDrawer
-          visible={drawerVisible}
-          selectedDate={selectedDate}
-          selectedPromoter={selectedPromoter}
-          promoterOptions={promoterOptionsData}
-          onApplyFilters={handleApplyFilters}
-          onClear={handleClearFilters}
-          onClose={() => setDrawerVisible(false)}
-        />
-        <ActionsHeader>
-          <TouchableOpacity onPress={() => router.push("/(main)/PromotersComponent")}>
-            <Text style={{ color: '#fff', fontSize: 16 }}>Voltar</Text>
-          </TouchableOpacity>
 
             <ButtonBack 
             onPress={() => router.push("/(main)/PromotersComponent")}

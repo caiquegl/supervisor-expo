@@ -297,7 +297,7 @@ export const Menu = ({ routeActive }: IProps) => {
                         stroke={routeActive == 'HomeButton' ? "#B56AFF" : "#000"}
                         strokeWidth={0.4}
                     />
-                    <Text style={{ fontSize: 16, color: routeActive == 'HomeButton' ? "#B56AFF" : "#000" }}>Home</Text>
+                    <Text style={{ fontSize: 16, color: routeActive == 'HomeButton' ? "#B56AFF" : "#000" }}>Início</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={{ alignItems: 'center', justifyContent: 'center' }} onPress={() => handleNavigation("/(main)/PromotersComponent")}>
                     <STime
@@ -478,6 +478,7 @@ export const Menu = ({ routeActive }: IProps) => {
                             showsVerticalScrollIndicator={false}
                             contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
                             style={{ flex: 1 }}
+                            nestedScrollEnabled={true}
                         >
                             <View style={{ marginBottom: Math.min(30, screenHeight * 0.035) }}>
                                 <Text
@@ -519,6 +520,8 @@ export const Menu = ({ routeActive }: IProps) => {
                                         <FlatList
                                             data={listStore}
                                             style={{ flexGrow: 0 }}
+                                            showsVerticalScrollIndicator={true}
+                                            nestedScrollEnabled={true}
                                             keyExtractor={(item) => item.value.toString()}
                                             renderItem={({ item }) => (
                                                 <TouchableOpacity

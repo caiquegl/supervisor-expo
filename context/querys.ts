@@ -102,6 +102,8 @@ query ListPromoters($filter: ListPromotersFilter!) {
     lunch_check_in
     lunch_check_out
     time_in_lunch
+    last_check_in
+    first_check_in
   }
 }
 `;

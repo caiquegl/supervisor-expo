@@ -4,8 +4,10 @@ import ElippseGray from "../../assets/icon/ellipsis-v-gray.svg";
 import { useQuery } from "@apollo/client";
 import { VISITS_QUERY } from "../../context/querys";
 import { userContext } from "../../context/userContext";
-import { ScrollView, Text, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { ActivityIndicator } from "react-native-paper";
+import { DonutChart } from "../DonutChart";
+import { Box, Flex, HStack, VStack, Text } from "native-base";
 
 export const CardVisits = () => {
   const { filter } = userContext();
@@ -14,7 +16,7 @@ export const CardVisits = () => {
       filter: { 
         ...filter, 
         dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10),
-        user_id: filter?.user_id || undefined, // Corrigido para user_id
+        user_id: filter?.user_id || undefined,
       },
     },
     fetchPolicy: 'network-only',
@@ -22,159 +24,75 @@ export const CardVisits = () => {
 
   const visits = data?.countVisitsDash || {};
 
-  console.log(visits, 'visits')
+  // Dados para o gráfico de donuts
+  const chartData = [
+    { x: "Em Progresso", y: visits.count_visits_in_progress || 0 },
+    { x: "Pendentes", y: visits.count_visits_pendent || 0 },
+    { x: "Concluídas", y: visits.count_visits_complete || 0 },
+    { x: "Justificadas", y: visits.count_visits_justify || 0 }
+  ];
+
   return (
     <ContainerCard>
       <ContainerIconCard>
-        <TextTitleCard>Visitas</TextTitleCard>
-        <ElippseGray width={20} height={20} />
+        <TextTitleCard>Status das Visitas</TextTitleCard>
       </ContainerIconCard>
-      {loading ? <ActivityIndicator size="large" /> :
+      
+      {loading ? (
         <ContainerCardStatus>
-          <ScrollView horizontal={true} showsVerticalScrollIndicator={true} persistentScrollbar={true}>
-            <View
-              style={{
-                flexDirection: 'row', // Equivalente ao HStack
-                gap: 20, // Equivalente ao space="20px"
-                height: 100, // Equivalente ao h="100px"
-              }}
-            >
-              <View
-                style={{
-                  justifyContent: 'center', // Equivalente ao Center
-                  alignItems: 'center', // Equivalente ao Center
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: 'rgb(255, 187, 40)',
-                  paddingHorizontal: 10, // Equivalente ao paddingX="10px"
-                  paddingVertical: 9, // Equivalente ao paddingY="9px"
-                  height: 78, // Equivalente ao h="78px"
-                  backgroundColor: '#FFF8F4',
-                }}
-              >
-                <Text style={{
-                  fontSize: 22, fontWeight: 'bold', textAlign: 'center', color: "rgb(255, 187, 40)"
-                }}
-                >
-                  {visits.count_visits_in_progress ? visits.count_visits_in_progress : '0'}
-                </Text>
-                <Text
-                  style={{
-                    color: "rgb(255, 187, 40)",
-                    fontSize: 11,
-                    textAlign: "center"
-                  }}
-                >
-                  Em progresso
-                </Text>
-               
-              </View>
-              <View
-                style={{
-                  justifyContent: 'center', // Centraliza verticalmente
-                  alignItems: 'center', // Centraliza horizontalmente
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: 'rgb(0, 136, 254)',
-                  paddingHorizontal: 10, // Equivalente ao paddingX
-                  paddingVertical: 9, // Equivalente ao paddingY
-                  height: 78,
-                  backgroundColor: '#f2f6ffff',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 22,
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "rgb(0, 136, 254)",
-                  }}
-                >
-                  {visits.count_visits_pendent ? visits.count_visits_pendent : '0'}
-                </Text>
-                <Text
-                  style={{
-                    color: "rgb(0, 136, 254)",
-                    fontSize: 11,
-                    textAlign: "center",
-                  }}
-                >
-                  Pendentes
-                </Text>
-                
-              </View>
-              <View
-                style={{
-                  justifyContent: 'center', // Centraliza verticalmente
-                  alignItems: 'center', // Centraliza horizontalmente
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: 'rgb(0, 196, 159)',
-                  paddingHorizontal: 10, // Equivalente ao paddingX
-                  paddingVertical: 9, // Equivalente ao paddingY
-                  height: 78,
-                  backgroundColor: '#F6FFF5',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 22,
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "rgb(0, 196, 159)",
-                  }}
-                >
-                  {visits.count_visits_complete ? visits.count_visits_complete : '0'}
-                </Text>
-                <Text
-                  style={{
-                    color: "rgb(0, 196, 159)",
-                    fontSize: 11,
-                    textAlign: "center",
-                  }}
-                >
-                  Concluídas
-                </Text>
-               
-              </View>
-              <View
-                style={{
-                  justifyContent: 'center', // Centraliza verticalmente
-                  alignItems: 'center', // Centraliza horizontalmente
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: 'rgb(255, 128, 66)',
-                  paddingHorizontal: 10, // Equivalente ao paddingX
-                  paddingVertical: 9, // Equivalente ao paddingY
-                  height: 78,
-                  backgroundColor: '#FFF8F4',
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 22,
-                    fontWeight: "bold",
-                    textAlign: "center",
-                    color: "rgb(255, 128, 66)",
-                  }}
-                >
-                  {visits.count_visits_justify ? visits.count_visits_justify : '0'}
-                </Text>
-                <Text
-                  style={{
-                    color: "rgb(255, 128, 66)",
-                    fontSize: 11,
-                    textAlign: "center",
-                  }}
-                >
-                  Justificadas
-                </Text>
-              
-              </View>
-            </View>
-          </ScrollView>
+          <ActivityIndicator size="large" />
         </ContainerCardStatus>
-      }
+      ) : (
+        <ContainerCardStatus>
+          <Flex direction="row" alignItems="center" justifyContent="space-between">
+            {/* Gráfico de Donut */}
+            <Box>
+              <DonutChart
+                name="Visitas"
+                data={chartData}
+                width={150}
+                height={150}
+                innerRadius={50}
+                colorScale={["#FFBB28", "#0088FE", "#00C49F", "#FF8042"]}
+                style={{
+                  labels: {
+                    fill: 'white', 
+                    fontSize: 0
+                  },
+                }}
+              />
+            </Box>
+
+            {/* Legenda */}
+            <VStack space="12px" flex={1} ml="20px">
+              <HStack space="10px" alignItems="center">
+                <Box borderRadius="full" w="10px" h="10px" bg="#FFBB28" />
+                <Text fontSize="12px" color="#2E2F34" fontWeight="500">
+                  {visits.count_visits_in_progress || 0} Em Progresso
+                </Text>
+              </HStack>
+              <HStack space="10px" alignItems="center">
+                <Box borderRadius="full" w="10px" h="10px" bg="#0088FE" />
+                <Text fontSize="12px" color="#2E2F34" fontWeight="500">
+                  {visits.count_visits_pendent || 0} Pendentes
+                </Text>
+              </HStack>
+              <HStack space="10px" alignItems="center">
+                <Box borderRadius="full" w="10px" h="10px" bg="#00C49F" />
+                <Text fontSize="12px" color="#2E2F34" fontWeight="500">
+                  {visits.count_visits_complete || 0} Concluídas
+                </Text>
+              </HStack>
+              <HStack space="10px" alignItems="center">
+                <Box borderRadius="full" w="10px" h="10px" bg="#FF8042" />
+                <Text fontSize="12px" color="#2E2F34" fontWeight="500">
+                  {visits.count_visits_justify || 0} Justificadas
+                </Text>
+              </HStack>
+            </VStack>
+          </Flex>
+        </ContainerCardStatus>
+      )}
     </ContainerCard>
   );
 };

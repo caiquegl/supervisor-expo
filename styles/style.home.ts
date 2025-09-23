@@ -30,8 +30,8 @@ export const ContainerIconCenter = styled.View`
   margin-top: 22px;
   flex-direction: row;
   align-items: center;
-  justify-content: center;
   margin-bottom: 27px;
+  margin-left: 20px;
 `;
 
 export const ContainerText = styled.View`

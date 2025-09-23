@@ -59,6 +59,7 @@ export const useInitializeClient = () => {
 
     if (!clientRef.current) {
         const httpLink = createHttpLink({ uri: 'https://team-mobile-api.rock-at.com/graphql' });
+        //const httpLink = createHttpLink({ uri: 'https://team-mobile-api.rock-at.com/graphql' });
 
         const authLink = setContext(async (_, { headers }) => {
             // get the authentication token from local storage if it exists

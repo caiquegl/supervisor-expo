@@ -168,3 +168,4 @@ const truncateText = useCallback((text: string, maxLength: number = 20) => {
 ---
 
 **🎉 Resultado**: Layout de fotos otimizado com grid 2x2 perfeito, imagens grandes, texto legível e hierarquia visual clara!
+

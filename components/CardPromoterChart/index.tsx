@@ -1,7 +1,5 @@
 import React, { useCallback, useEffect, useState, memo, useMemo } from "react";
 import { Box, Center, Divider, Flex, HStack, Spinner, Text, VStack } from "native-base";
-import Eye from '../../assets/icon/eye.svg'
-import Check from '../../assets/icon/check-circle.svg'
 import Icon from 'react-native-vector-icons/Feather'
 import IconFa from 'react-native-vector-icons/FontAwesome'
 import Phone from '../../assets/icon/phone-gray.svg'
@@ -9,13 +7,11 @@ import { TouchableOpacity, ScrollView, View, Linking } from 'react-native'
 import { CardOnOff } from "../CardOnOff";
 import { userContext } from "../../context/userContext";
 import { useQuery } from "@apollo/client";
-import { LIST_PROMOTER_QUERY } from "../../context/querys";
+import { LIST_PROMOTER_QUERY, ON_OFF_QUERY } from "../../context/querys";
 import { DonutChart } from "../DonutChart";
 import { useFocusEffect } from "@react-navigation/native";
 import { router } from "expo-router";
-import { loadErrorMessages, loadDevMessages } from "@apollo/client/dev";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-
+import Eye from '../../assets/icon/eye.svg'
 // Componente de item individual memoizado para evitar re-renderizações desnecessárias
 const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }) => {
   const chartData = [
@@ -29,246 +25,155 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
     (item?.visits_in_progress || 0) + (item?.visits_justify || 0);
 
   return (
-    <View>
-      <Box mt="15px" mb="15px">
-        <TouchableOpacity onPress={onPress}>
-        <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          w="100%"
-        >
-          <Center
-            borderRadius="full"
-            bg="#6600CC"
-            w="35px"
-            h="35px"
-            alignItems="center"
-            justifyContent="center"
-            mr="10px"
-          >
-            <Text
-              fontSize="20px"
-              color="#fff"
+    <TouchableOpacity onPress={onPress} activeOpacity={0.8}>
+      <Box
+        bg="#fff"
+        borderRadius="16px"
+        padding="20px"
+        marginBottom="16px"
+        shadow={2}
+        borderWidth="1px"
+        borderColor="#E5E7EB"
+        position="relative"
+      >
+        {/* Header com nome e status */}
+        <Flex direction="row" alignItems="center" justifyContent="space-between" mb="16px">
+          <Flex direction="row" alignItems="center" flex={1}>
+            <Center
+              borderRadius="full"
+              bg="#6600CC"
+              w="40px"
+              h="40px"
+              alignItems="center"
+              justifyContent="center"
+              mr="12px"
             >
-              {item?.name ? item?.name.charAt(0) : ''}
-            </Text>
-          </Center>
-          <Box>
-            <Text
-              fontSize="16px"
-              fontWeight="bold"
-              color="#2E2F34"
-            >
-              {item?.name ? (
-                item.name.length < 20 ? item.name : `${item.name.slice(0, 20)}...`
-              ) : ''}
+              <HStack alignItems="center" justifyContent="space-between" direction="row">
+
+                <Text fontSize="18px" color="#fff" fontWeight="bold">
+                  {item?.name ? item?.name.charAt(0).toUpperCase() : ''}
+                </Text>
+
+              </HStack>
+            </Center>
+            <Box flex={1}>
+              <HStack alignItems="center" justifyContent="space-between" direction="row">
+                <Text
+                  fontSize="16px"
+                  fontWeight="bold"
+                  color="#2E2F34"
+                  numberOfLines={1}
+                >
+                  {item?.name ? (
+                    item.name.toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())
+                  ) : ''}
+                </Text>
+                <View
+                  style={{
+                    width: 6,
+                    height: 6,
+                    borderRadius: 3,
+                    position: 'absolute',
+                    right: 25,
+                    backgroundColor: (item?.visits_complete > 0 || item?.visits_in_progress > 0) ? '#22C55E' : '#EF4444',
+                  }}
+                />
+              </HStack>
+              <Text fontSize="12px" color="#666" mt="2px">
+                {item?.team_name || 'Sem equipe'}
+              </Text>
+            </Box>
+
+          </Flex>
+
+          <View style={{ position: 'absolute', right: -10, top: -15 }}>
+
+            <Eye width={20} height={20} />
+          </View>
+        </Flex>
+
+        {/* Informações de horário */}
+        <Flex direction="row" justifyContent="space-between" mb="16px">
+          <Box alignItems="center">
+            <Text fontSize="10px" color="#666" mb="2px">Entrada</Text>
+            <Text fontSize="12px" color="#2E2F34" fontWeight="500">
+              {item?.first_check_in || '-'}
             </Text>
           </Box>
-          <Eye width={25} height={25} />
+
+          {item?.time_in_lunch && (
+            <Box alignItems="center">
+              <Text fontSize="10px" color="#666" mb="2px">Intervalo</Text>
+              <Text fontSize="12px" color="#2E2F34" fontWeight="500">
+                {item?.time_in_lunch}
+              </Text>
+            </Box>
+          )}
+
+          <Box alignItems="center">
+            <Text fontSize="10px" color="#666" mb="2px">Saída</Text>
+            <Text fontSize="12px" color="#2E2F34" fontWeight="500">
+              {item?.last_check_in || '-'}
+            </Text>
+          </Box>
         </Flex>
 
-        {/* <Flex
-          direction="row"
-          alignItems="center"
-          mt="10px"
-        >
-          <Text
-            fontSize="13px"
-            fontWeight="bold"
-            color="#4C4C4C"
-            mr="5px"
-          >
-            Última Visita:
-          </Text>
-          <Text
-            fontSize="13px"
-            color="#4C4C4C"
-            mr="5px"
-          >
-            {item?.last_visit || '-'}
-          </Text>
-          <Check width={20} height={20} />
-        </Flex> */}
-        {/* <Flex
-          direction="row"
-          alignItems="center"
-          mt="7px"
-        >
-          <Icon
-            name="wifi"
-            size={20}
-            style={{ color: '#2E2F34' }}
-          />
-          <Text
-            ml="7px"
-            fontSize="13px"
-            color="#4C4C4C"
-          >
-            {item?.sync_last_change || '-'}
-          </Text>
-        </Flex> */}
-        <Flex alignItems="center" justifyContent="space-between" direction="row">
-          <Flex
-            direction="row"
-            alignItems="center"
-            mt="7px"
-          >
-            <Text
-              fontSize="13px"
-              fontWeight="bold"
-              color="#4C4C4C"
-              mr="5px"
-            >
-              Entrada:
-            </Text>
-            <Text
-              ml="7px"
-              fontSize="13px"
-              color="#4C4C4C"
-            >
-              {item?.lunch_check_in || '-'}
-            </Text>
-          </Flex>
-
-          <Flex
-            direction="row"
-            alignItems="center"
-            mt="7px"
-          >
-            <Text
-              fontSize="13px"
-              fontWeight="bold"
-              color="#4C4C4C"
-              mr="5px"
-            >
-              Saída:
-            </Text>
-            <Text
-              ml="7px"
-              fontSize="13px"
-              color="#4C4C4C"
-            >
-              {item?.lunch_check_out || '-'}
-            </Text>
-          </Flex>
-        </Flex>
-        <Flex
-          direction="row"
-          alignItems="center"
-          mt="7px"
-        >
-          <Text
-            fontSize="13px"
-            fontWeight="bold"
-            color="#4C4C4C"
-            mr="5px"
-          >
-            Intervalo total:
-          </Text>
-          <Text
-            ml="7px"
-            fontSize="13px"
-            color="#4C4C4C"
-          >
-            {item?.time_in_lunch || '-'}
-          </Text>
-        </Flex>
-        <Flex
-          direction="row"
-          alignItems="center"
-          justifyContent="space-between"
-          mt="20px"
-        >
-          <Text
-            fontSize="13px"
-            color="#303030"
-            fontWeight="bold"
-          >
-            Visitas
-          </Text>
-          <Text
-            fontSize="10px"
-            color="#6600CC"
-          >
-            {item?.visits_complete || 0}/{totalVisits}
-          </Text>
-        </Flex>
-        <Flex
-          alignItems="center"
-          justifyContent="space-between"
-          direction="row"
-        >
+        {/* Gráfico de Donut e Legenda */}
+        <Flex direction="row" alignItems="center" justifyContent="space-between">
+          {/* Gráfico Donut */}
           <Box>
             <DonutChart
               name={item.name}
               data={chartData}
-              width={150}
-              height={150}
-              innerRadius={50}
+              width={120}
+              height={120}
+              innerRadius={40}
               colorScale={["#00C49F", "#FFBB28", "#0088FE", "#FF8042"]}
               style={{
                 labels: {
-                  fill: 'white', fontSize: 0
+                  fill: 'white',
+                  fontSize: 0
                 },
               }}
             />
           </Box>
-          <VStack space="10px" ml="-50px">
-            <HStack space="10px" alignItems="center">
-              <Box borderRadius="full" w="9px" h="9px" bg="#00C49F" />
-              <Box>
-                <Text fontSize="12px" color="#2E2F34" fontWeight="bold">
-                  Concluídas
-                </Text>
-                <Text fontSize="12px" color="#2E2F34" >
-                  {item?.visits_complete || 0}
-                </Text>
-              </Box>
+
+          {/* Legenda */}
+          <VStack space="8px" flex={1} ml="20px">
+            <HStack space="8px" alignItems="center">
+              <Box borderRadius="full" w="8px" h="8px" bg="#00C49F" />
+              <Text fontSize="11px" color="#2E2F34" fontWeight="500">
+                {item?.visits_complete || 0} Concluídas
+              </Text>
             </HStack>
-            <HStack space="10px" alignItems="center">
-              <Box borderRadius="full" w="9px" h="9px" bg="#FFBB28" />
-              <Box>
-                <Text fontSize="12px" color="#2E2F34" fontWeight="bold">
-                  Em Andamento
-                </Text>
-                <Text fontSize="12px" color="#2E2F34" >
-                  {item?.visits_in_progress || 0}
-                </Text>
-              </Box>
+            <HStack space="8px" alignItems="center">
+              <Box borderRadius="full" w="8px" h="8px" bg="#FFBB28" />
+              <Text fontSize="11px" color="#2E2F34" fontWeight="500">
+                {item?.visits_in_progress || 0} Em Andamento
+              </Text>
             </HStack>
-            <HStack space="10px" alignItems="center">
-              <Box borderRadius="full" w="9px" h="9px" bg="#0088FE" />
-              <Box>
-                <Text fontSize="12px" color="#2E2F34" fontWeight="bold">
-                  Pendente
-                </Text>
-                <Text fontSize="12px" color="#2E2F34" >
-                  {item?.visits_pendent || 0}
-                </Text>
-              </Box>
+            <HStack space="8px" alignItems="center">
+              <Box borderRadius="full" w="8px" h="8px" bg="#0088FE" />
+              <Text fontSize="11px" color="#2E2F34" fontWeight="500">
+                {item?.visits_pendent || 0} Pendente
+              </Text>
             </HStack>
-            <HStack space="10px" alignItems="center">
-              <Box borderRadius="full" w="9px" h="9px" bg="#FF8042" />
-              <Box>
-                <Text fontSize="12px" color="#2E2F34" fontWeight="bold">
-                  Justificado
-                </Text>
-                <Text fontSize="12px" color="#2E2F34" >
-                  {item?.visits_justify || 0}
-                </Text>
-              </Box>
+            <HStack space="8px" alignItems="center">
+              <Box borderRadius="full" w="8px" h="8px" bg="#FF8042" />
+              <Text fontSize="11px" color="#2E2F34" fontWeight="500">
+                {item?.visits_justify || 0} Justificado
+              </Text>
             </HStack>
           </VStack>
         </Flex>
 
-        </TouchableOpacity>
-        <HStack space="15px">
+        {/* Botões de ação */}
+        <HStack mt="16px" space="12px" justifyContent="center">
           <Center
             borderRadius="12px"
             bg="#F1F1F1"
-            w="35px"
-            h="35"
+            w="40px"
+            h="40px"
           >
             <TouchableOpacity onPress={() => Linking.openURL(`tel:${item.phone}`)}>
               <Phone width={20} height={20} />
@@ -277,8 +182,8 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
           <Center
             borderRadius="12px"
             bg="#C7FDE2"
-            w="35px"
-            h="35"
+            w="40px"
+            h="40px"
           >
             <TouchableOpacity onPress={() => Linking.openURL(`https://wa.me/${item.phone.replace(/\D/g, '')}`)}>
               <IconFa name="whatsapp" size={20} style={{ color: '#00B259' }} />
@@ -286,11 +191,11 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
           </Center>
         </HStack>
       </Box>
-    </View>
+    </TouchableOpacity>
   );
 });
 
-const PromoterItemComponent = () => {
+const PromoterItemComponent = ({ loadingOnOff }: { loadingOnOff: boolean }) => {
   const { filter, setSelectedPromoter } = userContext();
   const [skip, setSkip] = useState(0);
   const [promoters, setPromoters] = useState<any[]>([]);
@@ -324,7 +229,7 @@ const PromoterItemComponent = () => {
     // Reseta o estado local quando filtros mudarem
     setSkip(0);
     setPromoters([]);
-    
+
     // Refaz a requisição com os novos filtros
     if (refetch) {
       refetch({
@@ -349,11 +254,11 @@ const PromoterItemComponent = () => {
     setSkip(newSkip);
     fetchMore({
       variables: {
-        filter: { 
-          ...filter, 
-          dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), 
+        filter: {
+          ...filter,
+          dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10),
           user_id: filter?.user_id || undefined, // Corrigido para user_id
-          offset: newSkip 
+          offset: newSkip
         },
       },
       updateQuery: (prev, { fetchMoreResult }) => {
@@ -365,7 +270,7 @@ const PromoterItemComponent = () => {
         ];
         setPromoters(merged);
         return { ...prev, listPromoters: merged };
-      }      
+      }
     });
   }, [fetchMore, filter, skip]);
 
@@ -383,19 +288,53 @@ const PromoterItemComponent = () => {
     });
   }, [promoters]);
 
+  // Separar promotores em online e offline
+  const { onlinePromoters, offlinePromoters } = useMemo(() => {
+    const online = uniquePromoters.filter((promoter: any) =>
+      (promoter?.visits_complete > 0 || promoter?.visits_in_progress > 0)
+    );
+    const offline = uniquePromoters.filter((promoter: any) =>
+      !(promoter?.visits_complete > 0 || promoter?.visits_in_progress > 0)
+    );
+    return { onlinePromoters: online, offlinePromoters: offline };
+  }, [uniquePromoters]);
 
   return (
     <Box>
-      {data?.listPromoters && data?.listPromoters.length > 0 && data?.listPromoters?.map((item: any, key: any) => (
-        <PromoterItem
-          key={`${item.id}-${key}`}
-          item={item}
-          onPress={() => handlePromoterPress(item)}
-        />
-      ))}
+      {/* Seção de Promotores Online */}
+      {onlinePromoters.length > 0 && (
+        <>
+          <Text fontSize="18px" fontWeight="bold" mb="15px" mt="15px" color="#2E2F34">
+            Equipe disponível (Online)
+          </Text>
+          {onlinePromoters.map((item: any, key: any) => (
+            <PromoterItem
+              key={`online-${item.id}-${key}`}
+              item={item}
+              onPress={() => handlePromoterPress(item)}
+            />
+          ))}
+        </>
+      )}
 
-      {loading ? (
-        <Spinner color="indigo.500" />
+      {/* Seção de Promotores Offline */}
+      {offlinePromoters.length > 0 && (
+        <>
+          <Text fontSize="18px" fontWeight="bold" mb="30px" mt="30px" color="#2E2F34">
+            Equipe indisponível (Offline)
+          </Text>
+          {offlinePromoters.map((item: any, key: any) => (
+            <PromoterItem
+              key={`offline-${item.id}-${key}`}
+              item={item}
+              onPress={() => handlePromoterPress(item)}
+            />
+          ))}
+        </>
+      )}
+
+      {loadingOnOff ? (
+        <></>
       ) : (
         <TouchableOpacity onPress={handleLoadMore}>
           <Center mb="100px">
@@ -410,6 +349,15 @@ const PromoterItemComponent = () => {
 // Componente principal memoizado
 export const CardPromoterChart = memo(() => {
 
+  const { data, loading, error } = useQuery(ON_OFF_QUERY, {
+    variables: {
+      filter: {
+        dt_visit: new Date().toISOString().split('T')[0]
+      }
+    },
+    fetchPolicy: 'network-only',
+  });
+
   return (
     <Box
       bg="#fff"
@@ -419,15 +367,10 @@ export const CardPromoterChart = memo(() => {
     >
       <ScrollView nestedScrollEnabled>
         <VStack space="20px" divider={<Divider />} >
-          <CardOnOff />
-          <Text fontSize="18px" fontWeight="bold" mb="21px" mt="21px">
-            EQUIPE DISPONÍVEL
-          </Text>
+          <CardOnOff data={data} loading={loading} error={error} />
         </VStack>
 
-        <PromoterItemComponent />
-
-
+        <PromoterItemComponent loadingOnOff={loading} />
       </ScrollView>
     </Box>
   );

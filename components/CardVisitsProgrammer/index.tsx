@@ -149,11 +149,9 @@ export const CardVisitsProgrammer = () => {
               flexWrap='wrap'
               flex={1}
             >
-              <Store width={25} />
               <Text
                 fontSize="15px"
                 fontWeight="bold"
-                ml="6px"
                 mr="6px"
                 flex={1}
               >
@@ -288,7 +286,7 @@ export const CardVisitsProgrammer = () => {
     }
 
     // Só mostra o botão se há dados e não está carregando
-    if (uniqueVisits.length > 0) {
+    if (!loading && uniqueVisits.length > 0) {
       return (
         <TouchableOpacity
           onPress={handleLoadMore}

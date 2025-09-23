@@ -10,7 +10,7 @@ import {
 } from "../../styles/style.pictures";
 import LogoPromoter from "../../assets/images/logoPromoter.svg";
 import Left from "../../assets/icon/angle-left.svg";
-import { Flex, Text, VStack } from 'native-base';
+import { Flex, Text, VStack, HStack, Box } from 'native-base';
 import { 
   TouchableOpacity, 
   View, 
@@ -20,7 +20,9 @@ import {
   Modal, 
   StatusBar,
   SafeAreaView,
-  Platform
+  Platform,
+  ScrollView,
+  RefreshControl
 } from 'react-native'
 import { Menu } from '../../components/Menu';
 import { useFocusEffect } from '@react-navigation/native';
@@ -32,6 +34,7 @@ import { useRoute } from '@react-navigation/native';
 import ImageZoom from 'react-native-image-pan-zoom';
 import { Image } from 'expo-image';
 import { FlatList } from 'react-native';
+import { CustomCollapsible } from '../../components/CustomCollapsible';
 
 const { width, height } = Dimensions.get('window');
 
@@ -42,7 +45,7 @@ interface RouteParams {
 // Estilos otimizados para performance
 const styles = {
   photoItemContainer: {
-    width: (width - 80) / 2, // Largura calculada para 2 colunas com margem
+    width: (width - 90) / 2, // Largura calculada para 2 colunas com margem
     marginBottom: 12,
     marginHorizontal: 3,
   },
@@ -59,39 +62,39 @@ const styles = {
     flex: 1,
   },
   imageContainer: {
-    width: '100%',
+    width: '100%' as const,
     height: 140, // Altura aumentada para imagem
     borderRadius: 8,
-    overflow: 'hidden',
+    overflow: 'hidden' as const,
     backgroundColor: '#f5f5f5',
     marginBottom: 8,
   },
   thumbnailImage: {
-    width: '100%',
-    height: '100%',
+    width: '100%' as const,
+    height: '100%' as const,
   },
   loadingOverlay: {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     backgroundColor: 'rgba(255,255,255,0.8)',
   },
   photoInfo: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'flex-start' as const,
     paddingHorizontal: 2,
   },
   infoText: {
     fontSize: 12,
     color: '#333',
-    textAlign: 'left',
+    textAlign: 'left' as const,
     marginBottom: 3,
     lineHeight: 12,
-    flexWrap: 'wrap',
+    flexWrap: 'wrap' as const,
     numberOfLines: 2,
   },
   modalContainer: {
@@ -99,7 +102,7 @@ const styles = {
     backgroundColor: 'rgba(0,0,0,0.95)',
   },
   modalHeader: {
-    position: 'absolute',
+    position: 'absolute' as const,
     top: Platform.OS === 'ios' ? 50 : 30,
     right: 20,
     zIndex: 10,
@@ -109,21 +112,21 @@ const styles = {
     height: 44,
     borderRadius: 22,
     backgroundColor: 'rgba(0,0,0,0.6)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     borderWidth: 2,
     borderColor: 'rgba(255,255,255,0.3)',
   },
   closeButtonText: {
     color: '#fff',
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     lineHeight: 28,
   },
   imageZoomContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     paddingHorizontal: 20,
   },
   imageZoomStyle: {
@@ -135,38 +138,38 @@ const styles = {
     borderRadius: 10,
   },
   imageOverlay: {
-    position: 'absolute',
+    position: 'absolute' as const,
     bottom: 20,
     left: 20,
     right: 20,
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
   },
   overlayText: {
     color: '#FFD600',
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     backgroundColor: 'rgba(0,0,0,0.8)',
     paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
     marginBottom: 6,
-    textAlign: 'left',
-    maxWidth: '100%',
+    textAlign: 'left' as const,
+    maxWidth: '100%' as const,
   },
   dateText: {
     fontSize: 12,
     opacity: 0.9,
-    fontWeight: '500',
+    fontWeight: '500' as const,
   },
   shareButton: {
     backgroundColor: '#6600CC',
     paddingVertical: 16,
     paddingHorizontal: 40,
     borderRadius: 25,
-    alignSelf: 'center',
+    alignSelf: 'center' as const,
     marginBottom: 80,
     minWidth: 180,
-    alignItems: 'center',
+    alignItems: 'center' as const,
     elevation: 4,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
@@ -175,28 +178,38 @@ const styles = {
   },
   shareButtonText: {
     color: '#fff',
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     fontSize: 16,
     letterSpacing: 0.5,
   },
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     paddingHorizontal: 40,
   },
   emptyText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: 'bold' as const,
     color: '#4c4c4c',
-    textAlign: 'center',
+    textAlign: 'center' as const,
     lineHeight: 24,
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'center' as const,
+    alignItems: 'center' as const,
     paddingVertical: 40,
+  },
+  // Estilos para collapse
+  photosGrid: {
+    paddingBottom: 16,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#E0E0E0',
+    marginVertical: 16,
+    marginHorizontal: 16,
   },
 };
 
@@ -428,15 +441,118 @@ export default function Pictures() {
   // Memoize data to avoid unnecessary re-renders
   const photos = useMemo(() => data?.visitPhotosById || [], [data]);
 
-  // Função de renderização otimizada para item
-  const renderPhotoItem = useCallback(({ item }: { item: any }) => (
-    <PhotoItem item={item} />
-  ), []);
+  // Função para agrupar fotos hierarquicamente
+  const groupedPhotos = useMemo(() => {
+    const groups: { [key: string]: { [key: string]: any[] } } = {};
+    
+    photos.forEach((photo: any) => {
+      const industry = photo.sub_workspace || 'Sem Indústria';
+      const form = photo.form_name || 'Sem Formulário';
+      
+      if (!groups[industry]) {
+        groups[industry] = {};
+      }
+      if (!groups[industry][form]) {
+        groups[industry][form] = [];
+      }
+      groups[industry][form].push(photo);
+    });
+    
+    return groups;
+  }, [photos]);
 
   // Função de key extractor otimizada
   const keyExtractor = useCallback((item: any, index: number) => 
     `${item.url_image}_${item.id || index}`, []
   );
+
+  // Função de renderização otimizada para item
+  const renderPhotoItem = useCallback(({ item }: { item: any }) => (
+    <PhotoItem item={item} />
+  ), []);
+
+  // Componente para renderizar fotos em grid
+  const renderPhotosGrid = useCallback((photos: any[]) => {
+    return (
+      <View style={styles.photosGrid}>
+        <FlatList
+          data={photos}
+          renderItem={renderPhotoItem}
+          keyExtractor={keyExtractor}
+          numColumns={2}
+          initialNumToRender={10}
+          maxToRenderPerBatch={8}
+          windowSize={15}
+          removeClippedSubviews={false}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ 
+            paddingBottom: 8,
+          }}
+          columnWrapperStyle={{
+            justifyContent: 'space-around',
+            paddingHorizontal: 0,
+            marginBottom: 8
+          }}
+        />
+      </View>
+    );
+  }, [renderPhotoItem, keyExtractor]);
+
+  // Componente para renderizar formulário com collapse
+  const FormCollapse = React.memo(({ formName, photos }: { formName: string; photos: any[] }) => {
+    return (
+      <CustomCollapsible
+        title={`Formulário: ${formName}`}
+        count={photos.length}
+        level="secondary"
+      >
+        <Box bg="#fafbfc" paddingX="8px" paddingY="8px" borderRadius="6px">
+          {renderPhotosGrid(photos)}
+        </Box>
+      </CustomCollapsible>
+    );
+  });
+
+  // Componente para renderizar indústria com collapse
+  const IndustryCollapse = React.memo(({ industryName, forms }: { industryName: string; forms: { [key: string]: any[] } }) => {
+    const totalPhotos = Object.values(forms).reduce((sum, formPhotos) => sum + formPhotos.length, 0);
+
+    return (
+      <Box
+        bg="#fff"
+        borderRadius="12px"
+        marginBottom="16px"
+        overflow="hidden"
+        borderWidth="1px"
+        borderColor="#E5E7EB"
+      >
+        <CustomCollapsible
+          title={`Indústria: ${industryName}`}
+          count={totalPhotos}
+          level="primary"
+        >
+          <Box  paddingX="8px" paddingY="12px">
+            <VStack space="12px">
+              {Object.entries(forms).map(([formName, formPhotos]) => (
+                <Box
+                  key={formName}
+                  bg="#fff"
+                  borderRadius="8px"
+                  paddingY="8px"
+                  shadow={1}
+                >
+                  <FormCollapse
+                    formName={formName}
+                    photos={formPhotos}
+                  />
+                </Box>
+              ))}
+            </VStack>
+          </Box>
+        </CustomCollapsible>
+      </Box>
+    );
+  });
 
   // Componente de loading otimizado
   const LoadingComponent = useMemo(() => (
@@ -502,39 +618,31 @@ export default function Pictures() {
           ) : photos.length === 0 ? (
             EmptyComponent
           ) : (
-            <FlatList
-              data={photos}
-              renderItem={renderPhotoItem}
-              keyExtractor={keyExtractor}
-              numColumns={2}
-              // Configurações de performance otimizadas para evitar desaparecimento de imagens
-              initialNumToRender={10}
-              maxToRenderPerBatch={8}
-              windowSize={15}
-              removeClippedSubviews={false}
-              // Configurações de scroll
+            <ScrollView
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ 
                 paddingBottom: 32,
-                paddingHorizontal: 6,
                 paddingTop: 8
               }}
-              columnWrapperStyle={{
-                justifyContent: 'space-around',
-                paddingHorizontal: 0,
-                marginBottom: 8
-              }}
-              // Configurações de refresh
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              // Configurações de scroll infinito (se necessário no futuro)
-              onEndReachedThreshold={0.5}
-              // Configurações adicionais para manter imagens na memória
-              maintainVisibleContentPosition={{
-                minIndexForVisible: 0,
-                autoscrollToTopThreshold: 10
-              }}
-            />
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={['#6600CC']}
+                  tintColor="#6600CC"
+                />
+              }
+            >
+              <VStack space="0px">
+                {Object.entries(groupedPhotos).map(([industryName, forms]) => (
+                  <IndustryCollapse
+                    key={industryName}
+                    industryName={industryName}
+                    forms={forms}
+                  />
+                ))}
+              </VStack>
+            </ScrollView>
           )}
         </ContainerBody>
       </Container>

@@ -36,7 +36,6 @@ export const Card = ({ data }: IProps) => {
     const [openMenu, setOpenMenu] = useState(false)
     const [open, setOpen] = useState(false)
 
-    console.log(data)
     return (
         <View>
             <Box py="20px">
@@ -130,7 +129,7 @@ export const Card = ({ data }: IProps) => {
                         )}
                     </>
                 }
-                {data.status == 'IN_PROGRESS' || data.status == 'COMPLETE' &&
+                {data.status == 'IN_PROGRESS' || data.status == 'COMPLETE' ?
                     <>
                         {data.status != 'PENDENT' && data.status != 'JUSTIFIED_ABSENCE' &&
                             <HStack space="7px" mt="15px" h="18px">
@@ -191,7 +190,6 @@ export const Card = ({ data }: IProps) => {
                                 }
                             </HStack>
                             : null}
-                        {data.status == 'COMPLETE' || data.status == 'IN_PROGRESS' &&
                             <View style={{ width: '100%', justifyContent: "center", alignItems: "center" }}>
                                 <Button style={{ marginTop: 0, height: 40, width: '100%' }}
                                     onPress={() => router.push({ pathname: './pictures', params: data })}
@@ -199,11 +197,11 @@ export const Card = ({ data }: IProps) => {
                                     <Text style={{ color: '#000', fontSize: 16, fontWeight: 'bold' }}>Ver fotos</Text>
                                 </Button>
                             </View>
-                        }
+                        
 
 
                     </>
-                }
+                : null}
 
                 {/* <ModalEditVisit closeAlert={(close) => setOpen(close)} visible={open} />
             <ModalTask closeAlert={(close) => setOpenMenu(close)} visible={openMenu} /> */}

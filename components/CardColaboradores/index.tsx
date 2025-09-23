@@ -29,7 +29,6 @@ export const CardColaboradores = memo(() => {
     >
       <Flex alignItems="center" justifyContent="space-between" direction="row">
         <Text color="#2e2f34" fontSize="18px" textTransform="uppercase" fontWeight="700">Colaboradores</Text>
-        <ElippseGray width={20} height={20} />
       </Flex>
       <Flex
         alignItems="center"
