@@ -34,8 +34,17 @@ export const CardVisitsProgrammer = () => {
       filter: { ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), offset: 0 },
     },
     fetchPolicy: "no-cache",
-    errorPolicy: "all"
+    errorPolicy: "all",
+    onCompleted: (data) => {
+      console.log(
+          'CardVisitsProgrammer completed',
+          typeof data.visitsPromoters[0].industries
+      );
+    }
   });
+
+
+  // console.log(JSON.stringify({ ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), offset: 0 }, null, 2));
 
   // Query lazy para carregar mais dados
   const [loadMore, { loading: loadingMore }] = useLazyQuery(VISITS_PROGRAMER_QUERY, {
@@ -191,6 +200,24 @@ export const CardVisitsProgrammer = () => {
             </Text>
           </HStack>
 
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 }}>
+            {visit.industries.map((industry: { id: number, name: string }, index: number) => (
+              <View
+                key={industry.id || index}
+                style={{
+                  backgroundColor: '#eee',
+                  paddingVertical: 4,
+                  paddingHorizontal: 8,
+                  borderRadius: 12,
+                  marginRight: 8,
+                  marginBottom: 8,
+                }}
+              >
+                <Text style={{ fontSize: 13, color: '#555' }}>{industry.name}</Text>
+              </View>
+            ))}
+          </View>
+
           {visit.status == 'IN_PROGRESS' || visit.status == 'COMPLETE' && (
             <View style={{ flexDirection: 'row' }}>
               <HStack space="7px" mt="15px" h="18px">
@@ -265,7 +292,7 @@ export const CardVisitsProgrammer = () => {
           <View style={{ width: '100%', justifyContent: "center", alignItems: "center", marginTop: 10 }}>
             <Button
               style={{ marginTop: 0, height: 30, width: '100%', backgroundColor: '#4B0082' }}
-              onPress={() => router.push({ pathname: './visitDetails', params: visit })}
+              onPress={() => router.push({ pathname: './visitDetails', params: { ...visit, industries: JSON.stringify(visit.industries) } })}
             >
               <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>Detalhes da visita</Text>
             </Button>

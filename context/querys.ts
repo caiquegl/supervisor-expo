@@ -79,6 +79,11 @@ query VisitsPromoters($filter: ListVisitsPromotersFilter!) {
     obs_justify
     option_justify
     picture_justify
+    industries {
+      id
+      name
+      total_pictures
+    }
   }
 }
 `;
