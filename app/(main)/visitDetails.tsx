@@ -55,6 +55,10 @@ export default function VisitDetails() {
   const [searchIndustryText, setSearchIndustryText] = useState('');
   const [listIndustries, setListIndustries] = useState<any>([]);
   const [loadingIndustries, setLoadingIndustries] = useState(false);
+  
+  // Estados para o modal de confirmação
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedIndustry, setSelectedIndustry] = useState<any>(null);
 
   // Mutation para adicionar indústria
   const [addIndustryMutation, { loading: addingIndustry }] = useMutation(ADD_INDUSTRY_MUTATION);
@@ -78,6 +82,12 @@ export default function VisitDetails() {
       setLoadingIndustries(false);
     }
   }, [user.token, user.slug, user.workspace_id]);
+
+  // Função para mostrar confirmação antes de adicionar indústria
+  const confirmAddIndustry = useCallback((industry: any) => {
+    setSelectedIndustry(industry);
+    setShowConfirmationModal(true);
+  }, []);
 
   // Função para adicionar indústria à visita
   const addIndustryToVisit = useCallback(async (industry: any) => {
@@ -110,8 +120,10 @@ export default function VisitDetails() {
               text: 'OK',
               onPress: () => {
                 setShowAddIndustryModal(false);
+                setShowConfirmationModal(false);
                 setSearchIndustryText('');
                 setListIndustries([]);
+                setSelectedIndustry(null);
               }
             }
           ]
@@ -132,8 +144,16 @@ export default function VisitDetails() {
   // Função para fechar modal
   const closeAddIndustryModal = useCallback(() => {
     setShowAddIndustryModal(false);
+    setShowConfirmationModal(false);
     setSearchIndustryText('');
     setListIndustries([]);
+    setSelectedIndustry(null);
+  }, []);
+
+  // Função para fechar modal de confirmação
+  const closeConfirmationModal = useCallback(() => {
+    setShowConfirmationModal(false);
+    setSelectedIndustry(null);
   }, []);
 
   return (
@@ -370,15 +390,25 @@ export default function VisitDetails() {
                         backgroundColor: '#fff',
                       }}
                       onPress={() => {
-                        // TODO: Adicionar ação ao clicar na indústria
-                        console.log('Clicou na indústria:', industry);
+                        router.push({
+                          pathname: "/(main)/VisitDetailsIndustry",
+                          params: {
+                            visitId: visit.id,
+                            industryId: industry.id,
+                            industryName: industry.name,
+                            promoterName: visit.promoter_name,
+                            pdvName: visit.pdv_name,
+                            pdvAddress: visit.pdv_address,
+                            dtVisit: visit.dt_visit
+                          }
+                        });
                       }}
                     >
                       <Text style={{ fontSize: 15, color: '#333', marginBottom: 4 }}>
                         {industry.name}
                       </Text>
                       <Text style={{ fontSize: 12, color: '#888' }}>
-                        Fotos: { industry.total_pictures }
+                        Fotos sincronizadas: { industry.total_pictures }
                       </Text>
                     </TouchableOpacity>
                   ))}
@@ -387,34 +417,47 @@ export default function VisitDetails() {
             )}
 
             {/* Botão Adicionar Indústria */}
-            {visit?.status !== 'COMPLETE' && visit?.status !== 'JUSTIFIED' && (
-              <View style={{ 
-                backgroundColor: '#f8f9fa', 
-                padding: 10, 
-                borderRadius: 6, 
-                marginBottom: 4 
-              }}>
-                <TouchableOpacity
-                  style={{
-                    backgroundColor: '#6600CC',
-                    paddingVertical: 12,
-                    paddingHorizontal: 16,
-                    borderRadius: 8,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  onPress={() => setShowAddIndustryModal(true)}
-                >
-                  <Text style={{ 
-                    color: '#fff', 
-                    fontSize: 16, 
-                    fontWeight: 'bold' 
-                  }}>
-                    + Adicionar Indústria
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
+            <View style={{ 
+              backgroundColor: '#f8f9fa', 
+              padding: 10, 
+              borderRadius: 6, 
+              marginBottom: 4 
+            }}>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: (visit?.status === 'COMPLETE' || visit?.status === 'JUSTIFIED') ? '#ccc' : '#6600CC',
+                  paddingVertical: 12,
+                  paddingHorizontal: 16,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  opacity: (visit?.status === 'COMPLETE' || visit?.status === 'JUSTIFIED') ? 0.6 : 1,
+                }}
+                onPress={() => setShowAddIndustryModal(true)}
+                disabled={visit?.status === 'COMPLETE' || visit?.status === 'JUSTIFIED'}
+              >
+                <Text style={{ 
+                  color: (visit?.status === 'COMPLETE' || visit?.status === 'JUSTIFIED') ? '#666' : '#fff', 
+                  fontSize: 16, 
+                  fontWeight: 'bold' 
+                }}>
+                  + Adicionar Indústria
+                </Text>
+              </TouchableOpacity>
+              
+              {/* Texto explicativo quando o botão está desabilitado */}
+              {(visit?.status === 'COMPLETE' || visit?.status === 'JUSTIFIED') && (
+                <Text style={{
+                  fontSize: 12,
+                  color: '#888',
+                  textAlign: 'center',
+                  marginTop: 8,
+                  fontStyle: 'italic'
+                }}>
+                  Não é possível adicionar nova indústria, pois a visita já está finalizada!
+                </Text>
+              )}
+            </View>
             </VStack>
           </ScrollView>
         </ContainerBody>
@@ -524,7 +567,7 @@ export default function VisitDetails() {
                     
                     return (
                       <TouchableOpacity
-                        onPress={() => !isAlreadyAdded && !addingIndustry && addIndustryToVisit(item)}
+                        onPress={() => !isAlreadyAdded && !addingIndustry && confirmAddIndustry(item)}
                         disabled={isAlreadyAdded || addingIndustry}
                         style={{
                           padding: 15,
@@ -605,6 +648,126 @@ export default function VisitDetails() {
                 </Text>
               </View>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Confirmação para Adicionar Indústria */}
+      <Modal
+        visible={showConfirmationModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={closeConfirmationModal}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 16,
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 20,
+            padding: 24,
+            width: '90%',
+            maxWidth: 400,
+            elevation: 8,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 8,
+          }}>
+            <View style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 20
+            }}>
+              <Text style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: '#2E2F34',
+                flex: 1
+              }}>
+                Confirmar Adição
+              </Text>
+              <TouchableOpacity onPress={closeConfirmationModal} style={{ padding: 5 }}>
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={{ marginBottom: 24 }}>
+              <Text style={{
+                fontSize: 16,
+                color: '#666',
+                lineHeight: 24,
+                textAlign: 'center'
+              }}>
+                Deseja adicionar a indústria{' '}
+                <Text style={{ fontWeight: 'bold', color: '#2E2F34' }}>
+                  "{selectedIndustry?.label}"
+                </Text>
+                {' '}à esta visita?
+              </Text>
+            </View>
+
+            {addingIndustry && (
+              <View style={{ alignItems: 'center', padding: 20, marginBottom: 20 }}>
+                <ActivityIndicator size="large" color="#6600CC" />
+                <Text style={{ marginTop: 10, color: '#666' }}>Adicionando indústria...</Text>
+              </View>
+            )}
+
+            <View style={{ flexDirection: 'row', gap: 12 }}>
+              <TouchableOpacity 
+                onPress={closeConfirmationModal} 
+                disabled={addingIndustry}
+                style={{ 
+                  flex: 1,
+                  height: 50,
+                  borderRadius: 18,
+                  borderWidth: 1,
+                  borderColor: '#ccc',
+                  backgroundColor: '#fff',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  opacity: addingIndustry ? 0.5 : 1
+                }}
+              >
+                <Text style={{
+                  color: '#666',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                onPress={() => selectedIndustry && addIndustryToVisit(selectedIndustry)} 
+                disabled={addingIndustry}
+                style={{ 
+                  flex: 1,
+                  height: 50,
+                  borderRadius: 18,
+                  backgroundColor: '#6600CC',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  opacity: addingIndustry ? 0.5 : 1
+                }}
+              >
+                <Text style={{
+                  color: '#fff',
+                  fontSize: 16,
+                  fontWeight: 'bold',
+                  textAlign: 'center',
+                }}>
+                  Confirmar
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>

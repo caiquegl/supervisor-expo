@@ -194,3 +194,12 @@ mutation AddIndustry($input: AddIndustryInput!) {
   }
 }
 `;
+
+export const VISIT_INDUSTRY_TASK_QUERY = gql`
+  query VisitIndustryTask($input: VisitIndustryTaskInput!) {
+    visitIndustryTask(input: $input) {
+      complete
+      form_name
+    }
+  }
+`;
