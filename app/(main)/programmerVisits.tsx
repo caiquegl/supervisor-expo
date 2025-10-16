@@ -1,20 +1,14 @@
-import React, { useCallback, useEffect, useMemo } from "react";
-import { ScrollView, View, TouchableOpacity, Text } from "react-native";
+import React, { useEffect, useMemo } from "react";
+import { View, TouchableOpacity, Text } from "react-native";
 import {
   ActionsHeader,
   Container,
   ContainerBody,
   ContainerIcon,
-  ContainerIconCenter,
-  ContainerText,
   TextLogo,
-  TextName,
-  TextNameSmall,
-  TitlePage,
 } from "../../styles/style.home";
-import { useTheme } from "styled-components";
 import LogoPromoter from "../../assets/images/logoPromoter.svg";
-import { Flex, VStack } from "native-base";
+import { VStack } from "native-base";
 
 import { CardVisitsProgrammer } from "../../components/CardVisitsProgrammer";
 import { Menu } from "../../components/Menu";

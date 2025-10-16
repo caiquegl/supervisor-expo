@@ -85,7 +85,6 @@ export const useInitializeClient = () => {
                     notifyOnNetworkStatusChange: false,
                     // Configurações de performance
                     pollInterval: 0,
-                    fetchPolicy: "cache-first",
                 },
                 query: {
                     fetchPolicy: "cache-first",

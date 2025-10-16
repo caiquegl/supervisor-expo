@@ -132,6 +132,9 @@ export const CardVisitsProgrammer = () => {
       }
     };
 
+
+    // console.log(JSON.stringify(visit, null, 2));
+
     return (
       <View
         style={{
@@ -258,6 +261,15 @@ export const CardVisitsProgrammer = () => {
               </Button>
             </View>
           )}
+
+          <View style={{ width: '100%', justifyContent: "center", alignItems: "center", marginTop: 10 }}>
+            <Button
+              style={{ marginTop: 0, height: 30, width: '100%', backgroundColor: '#4B0082' }}
+              onPress={() => router.push({ pathname: './visitDetails', params: visit })}
+            >
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>Detalhes da visita</Text>
+            </Button>
+          </View>
         </View>
       </View>
     );
