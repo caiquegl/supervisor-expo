@@ -186,3 +186,11 @@ query Visits($filter: VisitFilter!) {
   }
 }
 `;
+
+export const ADD_INDUSTRY_MUTATION = gql`
+mutation AddIndustry($input: AddIndustryInput!) {
+  addIndustry(input: $input) {
+    id
+  }
+}
+`;
