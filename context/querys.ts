@@ -203,3 +203,12 @@ export const VISIT_INDUSTRY_TASK_QUERY = gql`
     }
   }
 `;
+
+export const SEARCH_FORMS_QUERY = gql`
+  query SearchForms($filter: SearchFormsFilter!) {
+    searchForms(filter: $filter) {
+      form_id
+      form_name
+    }
+  }
+`;

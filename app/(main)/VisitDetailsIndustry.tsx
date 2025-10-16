@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, FlatList, ActivityIndicator, Modal } from "react-native";
 import {
   ActionsHeader,
   Container,
@@ -19,7 +19,7 @@ import { theme } from "@/theme";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useLazyQuery } from "@apollo/client";
-import { VISIT_INDUSTRY_TASK_QUERY } from "../../context/querys";
+import { VISIT_INDUSTRY_TASK_QUERY, SEARCH_FORMS_QUERY } from "../../context/querys";
 
 type VisitIndustryParams = {
   visitId: string;
@@ -29,10 +29,16 @@ type VisitIndustryParams = {
   pdvName?: string;
   pdvAddress?: string;
   dtVisit?: string;
+  visitStatus?: string;
 }
 
 type FormItem = {
   complete: boolean;
+  form_name: string;
+}
+
+type FormSearchItem = {
+  form_id: string;
   form_name: string;
 }
 
@@ -51,6 +57,16 @@ export default function VisitDetailsIndustry() {
   const [formsList, setFormsList] = useState<FormItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Estados para o modal de adicionar pesquisa
+  const [showAddResearchModal, setShowAddResearchModal] = useState(false);
+  const [searchFormsList, setSearchFormsList] = useState<FormSearchItem[]>([]);
+  const [searchFormsLoading, setSearchFormsLoading] = useState(false);
+  const [searchFormsError, setSearchFormsError] = useState<string | null>(null);
+  
+  // Estados para o modal de confirmação
+  const [showConfirmationModal, setShowConfirmationModal] = useState(false);
+  const [selectedForm, setSelectedForm] = useState<FormSearchItem | null>(null);
 
   // Query para buscar os formulários da indústria
   const [getVisitIndustryTask, { loading: queryLoading }] = useLazyQuery(VISIT_INDUSTRY_TASK_QUERY, {
@@ -66,6 +82,31 @@ export default function VisitDetailsIndustry() {
       setLoading(false);
     }
   });
+
+  // Query para buscar formulários disponíveis para adicionar
+  const [searchForms, { loading: searchQueryLoading }] = useLazyQuery(SEARCH_FORMS_QUERY, {
+    onCompleted: (data) => {
+      const forms = data?.searchForms || [];
+      setSearchFormsList(forms);
+      setSearchFormsLoading(false);
+      setSearchFormsError(null);
+    },
+    onError: (error) => {
+      console.error('Erro ao buscar formulários disponíveis:', error);
+      setSearchFormsError('Erro ao carregar formulários disponíveis');
+      setSearchFormsLoading(false);
+    }
+  });
+
+  // Função helper para verificar se um formulário já está na visita
+  const isFormAlreadyInVisit = (formName: string): boolean => {
+    return formsList.some(form => form.form_name === formName);
+  };
+
+  // Função helper para verificar se a visita está finalizada (concluída ou justificada)
+  const isVisitFinalized = (): boolean => {
+    return params.visitStatus === 'COMPLETE' || params.visitStatus === 'JUSTIFIED';
+  };
 
   // Carregar dados quando o componente montar
   useEffect(() => {
@@ -281,8 +322,8 @@ export default function VisitDetailsIndustry() {
                           getVisitIndustryTask({
                             variables: {
                               input: {
-                                visitId: params.visitId,
-                                industryId: params.industryId
+                                visit_id: params.visitId,
+                                sub_workspace_id: params.industryId
                               }
                             }
                           });
@@ -374,10 +415,478 @@ export default function VisitDetailsIndustry() {
                 )}
               </View>
 
+              {/* Botão de Adicionar Pesquisa */}
+              <View style={{ 
+                backgroundColor: '#f8f9fa', 
+                padding: 15, 
+                borderRadius: 8, 
+                marginBottom: 8 
+              }}>
+                <TouchableOpacity 
+                  onPress={() => {
+                    if (!isVisitFinalized()) {
+                      console.log('Abrindo modal de adicionar pesquisa');
+                      setSearchFormsLoading(true);
+                      setSearchFormsError(null);
+                      searchForms({
+                        variables: {
+                          filter: {
+                            sub_workspace_id: params.industryId
+                          }
+                        }
+                      });
+                      setShowAddResearchModal(true);
+                    }
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isVisitFinalized() ? '#ccc' : '#6600CC',
+                    paddingVertical: 12,
+                    paddingHorizontal: 20,
+                    borderRadius: 8,
+                    elevation: 2,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    opacity: isVisitFinalized() ? 0.6 : 1
+                  }}
+                  activeOpacity={isVisitFinalized() ? 1 : 0.8}
+                  disabled={isVisitFinalized()}
+                >
+                  <Ionicons 
+                    name="add-circle" 
+                    size={20} 
+                    color={isVisitFinalized() ? '#666' : '#fff'} 
+                    style={{ marginRight: 8 }} 
+                  />
+                  <Text style={{
+                    color: isVisitFinalized() ? '#666' : '#fff',
+                    fontSize: 16,
+                    fontWeight: 'bold'
+                  }}>
+                    Adicionar Pesquisa
+                  </Text>
+                </TouchableOpacity>
+                
+                {/* Texto explicativo quando o botão está desabilitado */}
+                {isVisitFinalized() && (
+                  <Text style={{
+                    fontSize: 12,
+                    color: '#888',
+                    textAlign: 'center',
+                    marginTop: 8,
+                    fontStyle: 'italic'
+                  }}>
+                    Não é possível adicionar nova pesquisa, pois a visita já está finalizada!
+                  </Text>
+                )}
+              </View>
+
             </VStack>
           </ScrollView>
         </ContainerBody>
       </Container>
+      
+      {/* Modal de Adicionar Pesquisa */}
+      <Modal
+        visible={showAddResearchModal}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => {
+          console.log('Fechando modal');
+          setShowAddResearchModal(false);
+        }}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 12,
+            width: '100%',
+            height: '70%',
+            elevation: 5,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 4
+          }}>
+            {/* Header do Modal */}
+            <View style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: 20,
+              borderBottomWidth: 1,
+              borderBottomColor: '#e0e0e0'
+            }}>
+              <HStack alignItems="center" space="8px">
+                <Ionicons name="document-text" size={24} color="#6600CC" />
+                <Text style={{
+                  fontSize: 18,
+                  fontWeight: 'bold',
+                  color: '#333'
+                }}>
+                  Selecionar Formulário
+                </Text>
+              </HStack>
+              <TouchableOpacity 
+                onPress={() => setShowAddResearchModal(false)}
+                style={{
+                  padding: 4
+                }}
+              >
+                <Ionicons name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Mensagem de Aviso */}
+            <View style={{
+              paddingHorizontal: 20,
+              paddingVertical: 16,
+              backgroundColor: '#fff3cd',
+              borderBottomWidth: 1,
+              borderBottomColor: '#e0e0e0',
+              alignItems: 'center'
+            }}>
+              <Ionicons name="warning" size={24} color="#856404" style={{ marginBottom: 8 }} />
+              <Text style={{
+                fontSize: 14,
+                color: '#856404',
+                textAlign: 'center',
+                lineHeight: 20
+              }}>
+                Fique Atento! Adicionar pesquisa via App não irá respeitar as regras de agendamento e mix configuradas no backoffice.
+              </Text>
+            </View>
+
+            {/* Lista de Formulários */}
+            <View style={{ 
+              flex: 1,
+              backgroundColor: '#fff'
+            }}>
+              {/* Loading State */}
+              {(searchFormsLoading || searchQueryLoading) && (
+                <View style={{ 
+                  alignItems: 'center', 
+                  paddingVertical: 20 
+                }}>
+                  <ActivityIndicator size="large" color="#6600CC" />
+                  <Text style={{ 
+                    marginTop: 10, 
+                    color: '#666',
+                    fontSize: 14 
+                  }}>
+                    Carregando formulários disponíveis...
+                  </Text>
+                </View>
+              )}
+
+              {/* Error State */}
+              {searchFormsError && !searchFormsLoading && !searchQueryLoading && (
+                <View style={{ 
+                  alignItems: 'center', 
+                  paddingVertical: 20 
+                }}>
+                  <Ionicons name="alert-circle" size={24} color="#dc3545" />
+                  <Text style={{ 
+                    marginTop: 10, 
+                    color: '#dc3545',
+                    fontSize: 14,
+                    textAlign: 'center'
+                  }}>
+                    {searchFormsError}
+                  </Text>
+                  <TouchableOpacity 
+                    onPress={() => {
+                      setSearchFormsLoading(true);
+                      setSearchFormsError(null);
+                      searchForms({
+                        variables: {
+                          filter: {
+                            sub_workspace_id: params.industryId
+                          }
+                        }
+                      });
+                    }}
+                    style={{
+                      marginTop: 10,
+                      paddingHorizontal: 16,
+                      paddingVertical: 8,
+                      backgroundColor: '#6600CC',
+                      borderRadius: 6
+                    }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 12 }}>
+                      Tentar Novamente
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* Empty State */}
+              {!searchFormsLoading && !searchQueryLoading && !searchFormsError && searchFormsList.length === 0 && (
+                <View style={{ 
+                  alignItems: 'center', 
+                  paddingVertical: 20 
+                }}>
+                  <Ionicons name="document-text" size={24} color="#999" />
+                  <Text style={{ 
+                    marginTop: 10, 
+                    color: '#999',
+                    fontSize: 14,
+                    textAlign: 'center'
+                  }}>
+                    Nenhum formulário disponível
+                  </Text>
+                </View>
+              )}
+
+              {/* Formulários List */}
+              {!searchFormsLoading && !searchQueryLoading && !searchFormsError && searchFormsList.length > 0 && (
+                <FlatList
+                  data={searchFormsList}
+                  keyExtractor={(item) => item.form_id}
+                  renderItem={({ item }) => {
+                    const isDisabled = isFormAlreadyInVisit(item.form_name);
+                    
+                    return (
+                      <TouchableOpacity
+                        onPress={() => {
+                          if (!isDisabled) {
+                            setSelectedForm(item);
+                            setShowAddResearchModal(false);
+                            setShowConfirmationModal(true);
+                          }
+                        }}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          paddingVertical: 15,
+                          paddingHorizontal: 20,
+                          borderBottomWidth: 1,
+                          borderBottomColor: '#f0f0f0',
+                          backgroundColor: isDisabled ? '#f8f9fa' : '#fff',
+                          opacity: isDisabled ? 0.6 : 1
+                        }}
+                        activeOpacity={isDisabled ? 1 : 0.7}
+                        disabled={isDisabled}
+                      >
+                        <View style={{
+                          width: 8,
+                          height: 8,
+                          borderRadius: 4,
+                          backgroundColor: isDisabled ? '#999' : '#6600CC',
+                          marginRight: 12
+                        }} />
+                        <Text style={{
+                          flex: 1,
+                          fontSize: 16,
+                          color: isDisabled ? '#999' : '#333'
+                        }}>
+                          {item.form_name}
+                        </Text>
+                        {isDisabled ? (
+                          <View style={{
+                            flexDirection: 'row',
+                            alignItems: 'center'
+                          }}>
+                            <Ionicons name="checkmark-circle" size={16} color="#28a745" />
+                            <Text style={{
+                              fontSize: 12,
+                              color: '#28a745',
+                              marginLeft: 4,
+                              fontWeight: '500'
+                            }}>
+                              Já adicionado
+                            </Text>
+                          </View>
+                        ) : (
+                          <Ionicons name="chevron-forward" size={16} color="#999" />
+                        )}
+                      </TouchableOpacity>
+                    );
+                  }}
+                  showsVerticalScrollIndicator={true}
+                  style={{ flex: 1 }}
+                  contentContainerStyle={{ flexGrow: 1 }}
+                />
+              )}
+            </View>
+
+            {/* Footer do Modal */}
+            <View style={{
+              padding: 20,
+              borderTopWidth: 1,
+              borderTopColor: '#e0e0e0'
+            }}>
+              <TouchableOpacity
+                onPress={() => setShowAddResearchModal(false)}
+                style={{
+                  backgroundColor: '#f8f9fa',
+                  paddingVertical: 12,
+                  paddingHorizontal: 20,
+                  borderRadius: 8,
+                  alignItems: 'center'
+                }}
+              >
+                <Text style={{
+                  color: '#666',
+                  fontSize: 16,
+                  fontWeight: '500'
+                }}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal de Confirmação */}
+      <Modal
+        visible={showConfirmationModal}
+        animationType="fade"
+        transparent={true}
+        onRequestClose={() => {
+          setShowConfirmationModal(false);
+          setSelectedForm(null);
+        }}
+      >
+        <View style={{
+          flex: 1,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20
+        }}>
+          <View style={{
+            backgroundColor: '#fff',
+            borderRadius: 12,
+            width: '100%',
+            maxWidth: 400,
+            elevation: 5,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 4
+          }}>
+            {/* Header do Modal */}
+            <View style={{
+              alignItems: 'center',
+              padding: 20,
+              borderBottomWidth: 1,
+              borderBottomColor: '#e0e0e0'
+            }}>
+              <Ionicons name="help-circle" size={48} color="#6600CC" style={{ marginBottom: 12 }} />
+              <Text style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: '#333',
+                textAlign: 'center'
+              }}>
+                Confirmar Adição
+              </Text>
+            </View>
+
+            {/* Conteúdo do Modal */}
+            <View style={{
+              padding: 20
+            }}>
+              <Text style={{
+                fontSize: 16,
+                color: '#666',
+                textAlign: 'center',
+                lineHeight: 24,
+                marginBottom: 20
+              }}>
+                Deseja adicionar o formulário "{selectedForm?.form_name}" à esta visita?
+              </Text>
+              
+              <Text style={{
+                fontSize: 14,
+                color: '#856404',
+                textAlign: 'center',
+                lineHeight: 20,
+                backgroundColor: '#fff3cd',
+                padding: 12,
+                borderRadius: 8,
+                marginBottom: 20
+              }}>
+                ⚠️ Lembre-se: Esta ação não respeitará as regras de agendamento e mix configuradas no backoffice.
+              </Text>
+            </View>
+
+            {/* Botões de Ação */}
+            <View style={{
+              flexDirection: 'row',
+              padding: 20,
+              borderTopWidth: 1,
+              borderTopColor: '#e0e0e0',
+              gap: 12
+            }}>
+              <TouchableOpacity
+                onPress={() => {
+                  setShowConfirmationModal(false);
+                  setSelectedForm(null);
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#f8f9fa',
+                  paddingVertical: 12,
+                  paddingHorizontal: 20,
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderColor: '#e0e0e0'
+                }}
+              >
+                <Text style={{
+                  color: '#666',
+                  fontSize: 16,
+                  fontWeight: '500'
+                }}>
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity
+                onPress={() => {
+                  // Aqui você pode implementar a lógica de adição do formulário
+                  console.log('Confirmando adição do formulário:', selectedForm);
+                  setShowConfirmationModal(false);
+                  setSelectedForm(null);
+                  // TODO: Implementar lógica de adição do formulário
+                }}
+                style={{
+                  flex: 1,
+                  backgroundColor: '#6600CC',
+                  paddingVertical: 12,
+                  paddingHorizontal: 20,
+                  borderRadius: 8,
+                  alignItems: 'center'
+                }}
+              >
+                <Text style={{
+                  color: '#fff',
+                  fontSize: 16,
+                  fontWeight: 'bold'
+                }}>
+                  Confirmar
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      
       <Menu routeActive="programmerVisits" />
     </View>
   );

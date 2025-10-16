@@ -388,6 +388,9 @@ export default function VisitDetails() {
                         borderRadius: 8,
                         marginBottom: 8,
                         backgroundColor: '#fff',
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
                       }}
                       onPress={() => {
                         router.push({
@@ -399,17 +402,19 @@ export default function VisitDetails() {
                             promoterName: visit.promoter_name,
                             pdvName: visit.pdv_name,
                             pdvAddress: visit.pdv_address,
-                            dtVisit: visit.dt_visit
+                            dtVisit: visit.dt_visit,
+                            visitStatus: visit.status
                           }
                         });
                       }}
                     >
-                      <Text style={{ fontSize: 15, color: '#333', marginBottom: 4 }}>
+                      <Text style={{ fontSize: 15, color: '#333', flex: 1 }}>
                         {industry.name}
                       </Text>
-                      <Text style={{ fontSize: 12, color: '#888' }}>
+                      <Ionicons name="chevron-forward" size={16} color="#6600CC" />
+                      {/* <Text style={{ fontSize: 12, color: '#888' }}>
                         Fotos sincronizadas: { industry.total_pictures }
-                      </Text>
+                      </Text> */}
                     </TouchableOpacity>
                   ))}
                 </View>
