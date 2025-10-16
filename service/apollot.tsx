@@ -58,8 +58,8 @@ export const useInitializeClient = () => {
     const clientRef = useRef<ApolloClient<any> | undefined>(undefined);
 
     if (!clientRef.current) {
-        // const httpLink = createHttpLink({ uri: 'https://team-mobile-api.rock-at.com/graphql' });
-        const httpLink = createHttpLink({ uri: 'http://192.168.0.47:4000/graphql' });
+        const httpLink = createHttpLink({ uri: 'https://team-mobile-api.rock-at.com/graphql' });
+        // const httpLink = createHttpLink({ uri: 'http://192.168.0.193:4000/graphql' });
 
         const authLink = setContext(async (_, { headers }) => {
             // get the authentication token from local storage if it exists

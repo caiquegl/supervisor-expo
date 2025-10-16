@@ -18,8 +18,8 @@ import { Menu } from "../../components/Menu";
 import { theme } from "@/theme";
 import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { useLazyQuery } from "@apollo/client";
-import { VISIT_INDUSTRY_TASK_QUERY, SEARCH_FORMS_QUERY } from "../../context/querys";
+import { useLazyQuery, useMutation } from "@apollo/client";
+import { VISIT_INDUSTRY_TASK_QUERY, SEARCH_FORMS_QUERY, ADD_TASK_MUTATION } from "../../context/querys";
 
 type VisitIndustryParams = {
   visitId: string;
@@ -67,6 +67,10 @@ export default function VisitDetailsIndustry() {
   // Estados para o modal de confirmação
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [selectedForm, setSelectedForm] = useState<FormSearchItem | null>(null);
+  
+  // Estados para a mutation de adicionar task
+  const [addTaskLoading, setAddTaskLoading] = useState(false);
+  const [addTaskError, setAddTaskError] = useState<string | null>(null);
 
   // Query para buscar os formulários da indústria
   const [getVisitIndustryTask, { loading: queryLoading }] = useLazyQuery(VISIT_INDUSTRY_TASK_QUERY, {
@@ -98,6 +102,36 @@ export default function VisitDetailsIndustry() {
     }
   });
 
+  // Mutation para adicionar task
+  const [addTask] = useMutation(ADD_TASK_MUTATION, {
+    onCompleted: (data) => {
+      console.log('Task adicionada com sucesso:', data);
+      setAddTaskLoading(false);
+      setAddTaskError(null);
+      
+      // Fechar modais
+      setShowConfirmationModal(false);
+      setSelectedForm(null);
+      
+      // Recarregar a lista de formulários
+      if (params.visitId && params.industryId) {
+        getVisitIndustryTask({
+          variables: {
+            input: {
+              visit_id: parseInt(params.visitId),
+              sub_workspace_id: parseInt(params.industryId)
+            }
+          }
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Erro ao adicionar task:', error);
+      setAddTaskError('Erro ao adicionar formulário à visita');
+      setAddTaskLoading(false);
+    }
+  });
+
   // Função helper para verificar se um formulário já está na visita
   const isFormAlreadyInVisit = (formName: string): boolean => {
     return formsList.some(form => form.form_name === formName);
@@ -106,6 +140,33 @@ export default function VisitDetailsIndustry() {
   // Função helper para verificar se a visita está finalizada (concluída ou justificada)
   const isVisitFinalized = (): boolean => {
     return params.visitStatus === 'COMPLETE' || params.visitStatus === 'JUSTIFIED';
+  };
+
+  // Função para executar a mutation de adicionar task
+  const handleAddTask = async () => {
+    if (!selectedForm || !params.visitId || !params.industryId) {
+      console.error('Dados insuficientes para adicionar task');
+      return;
+    }
+
+    try {
+      setAddTaskLoading(true);
+      setAddTaskError(null);
+
+      await addTask({
+        variables: {
+          input: {
+            visit_id: parseInt(params.visitId),
+            form_id: parseInt(selectedForm.form_id),
+            sub_workspace_id: parseInt(params.industryId)
+          }
+        }
+      });
+    } catch (error) {
+      console.error('Erro ao executar mutation addTask:', error);
+      setAddTaskError('Erro ao adicionar formulário à visita');
+      setAddTaskLoading(false);
+    }
   };
 
   // Carregar dados quando o componente montar
@@ -822,6 +883,26 @@ export default function VisitDetailsIndustry() {
               }}>
                 ⚠️ Lembre-se: Esta ação não respeitará as regras de agendamento e mix configuradas no backoffice.
               </Text>
+
+              {/* Error State */}
+              {addTaskError && (
+                <View style={{
+                  backgroundColor: '#f8d7da',
+                  padding: 12,
+                  borderRadius: 8,
+                  marginBottom: 20,
+                  alignItems: 'center'
+                }}>
+                  <Ionicons name="alert-circle" size={20} color="#721c24" style={{ marginBottom: 8 }} />
+                  <Text style={{
+                    fontSize: 14,
+                    color: '#721c24',
+                    textAlign: 'center'
+                  }}>
+                    {addTaskError}
+                  </Text>
+                </View>
+              )}
             </View>
 
             {/* Botões de Ação */}
@@ -834,22 +915,27 @@ export default function VisitDetailsIndustry() {
             }}>
               <TouchableOpacity
                 onPress={() => {
-                  setShowConfirmationModal(false);
-                  setSelectedForm(null);
+                  if (!addTaskLoading) {
+                    setShowConfirmationModal(false);
+                    setSelectedForm(null);
+                    setAddTaskError(null);
+                  }
                 }}
                 style={{
                   flex: 1,
-                  backgroundColor: '#f8f9fa',
+                  backgroundColor: addTaskLoading ? '#e0e0e0' : '#f8f9fa',
                   paddingVertical: 12,
                   paddingHorizontal: 20,
                   borderRadius: 8,
                   alignItems: 'center',
                   borderWidth: 1,
-                  borderColor: '#e0e0e0'
+                  borderColor: '#e0e0e0',
+                  opacity: addTaskLoading ? 0.6 : 1
                 }}
+                disabled={addTaskLoading}
               >
                 <Text style={{
-                  color: '#666',
+                  color: addTaskLoading ? '#999' : '#666',
                   fontSize: 16,
                   fontWeight: '500'
                 }}>
@@ -858,29 +944,40 @@ export default function VisitDetailsIndustry() {
               </TouchableOpacity>
               
               <TouchableOpacity
-                onPress={() => {
-                  // Aqui você pode implementar a lógica de adição do formulário
-                  console.log('Confirmando adição do formulário:', selectedForm);
-                  setShowConfirmationModal(false);
-                  setSelectedForm(null);
-                  // TODO: Implementar lógica de adição do formulário
-                }}
+                onPress={handleAddTask}
                 style={{
                   flex: 1,
-                  backgroundColor: '#6600CC',
+                  backgroundColor: addTaskLoading ? '#999' : '#6600CC',
                   paddingVertical: 12,
                   paddingHorizontal: 20,
                   borderRadius: 8,
-                  alignItems: 'center'
+                  alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  opacity: addTaskLoading ? 0.8 : 1
                 }}
+                disabled={addTaskLoading}
               >
-                <Text style={{
-                  color: '#fff',
-                  fontSize: 16,
-                  fontWeight: 'bold'
-                }}>
-                  Confirmar
-                </Text>
+                {addTaskLoading ? (
+                  <>
+                    <ActivityIndicator size="small" color="#fff" style={{ marginRight: 8 }} />
+                    <Text style={{
+                      color: '#fff',
+                      fontSize: 16,
+                      fontWeight: 'bold'
+                    }}>
+                      Adicionando...
+                    </Text>
+                  </>
+                ) : (
+                  <Text style={{
+                    color: '#fff',
+                    fontSize: 16,
+                    fontWeight: 'bold'
+                  }}>
+                    Confirmar
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
           </View>

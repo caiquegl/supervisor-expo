@@ -212,3 +212,11 @@ export const SEARCH_FORMS_QUERY = gql`
     }
   }
 `;
+
+export const ADD_TASK_MUTATION = gql`
+  mutation AddTask($input: AddTaskInput!) {
+    addTask(input: $input) {
+      id
+    }
+  }
+`;

@@ -23,25 +23,29 @@ export const CardVisitsProgrammer = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [hasMoreData, setHasMoreData] = useState(true); // Novo estado para controlar se há mais dados
 
-  // Resetar paginação e lista ao mudar o filtro global
-  useEffect(() => {
-    setSkip(0);
-    setVisitsProgrammer([]);
-  }, [filter]);
-
-  const { data, loading, error } = useQuery(VISITS_PROGRAMER_QUERY, {
+  const { data, loading, error, refetch } = useQuery(VISITS_PROGRAMER_QUERY, {
     variables: {
       filter: { ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), offset: 0 },
     },
     fetchPolicy: "no-cache",
-    errorPolicy: "all",
-    onCompleted: (data) => {
-      console.log(
-          'CardVisitsProgrammer completed',
-          typeof data.visitsPromoters[0].industries
-      );
-    }
+    errorPolicy: "all"
   });
+
+  // Resetar paginação e lista ao mudar o filtro global
+  useEffect(() => {
+    setSkip(0);
+    setVisitsProgrammer([]); // Limpar a lista atual
+    setHasMoreData(true); // Resetar flag de mais dados
+    setIsInitialLoad(true); // Resetar flag de carregamento inicial
+
+    refetch({
+      filter: { ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), offset: 0 },
+    });
+
+    console.log('refetch', filter);
+  }, [filter]);
+
+ 
 
 
   // console.log(JSON.stringify({ ...filter, dt_visit: filter?.dt_visit || new Date().toISOString().slice(0, 10), offset: 0 }, null, 2));
