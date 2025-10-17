@@ -208,7 +208,7 @@ export const Card = ({ data }: IProps) => {
 
                 {/* Botão de detalhes para todas as visitas (incluindo pendentes e justificadas) */}
                 <View style={{ width: '100%', justifyContent: "center", alignItems: "center", marginTop: 10 }}>
-                    <Button 
+                    {/* <Button 
                         style={{ marginTop: 0, height: 40, width: '100%', backgroundColor: '#4B0082' }}
                         onPress={() => router.push({ 
                             pathname: './visitDetails', 
@@ -219,7 +219,7 @@ export const Card = ({ data }: IProps) => {
                         })}
                     >
                         <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>Detalhes da visita</Text>
-                    </Button>
+                    </Button> */}
                 </View>
 
                 {/* <ModalEditVisit closeAlert={(close) => setOpen(close)} visible={open} />
