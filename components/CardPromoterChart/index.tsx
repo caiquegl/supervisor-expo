@@ -68,7 +68,7 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
                     item.name.toLowerCase().replace(/\b\w/g, (l: string) => l.toUpperCase())
                   ) : ''}
                 </Text>
-                <View
+                {/* <View
                   style={{
                     width: 6,
                     height: 6,
@@ -77,7 +77,7 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
                     right: 25,
                     backgroundColor: (item?.visits_complete > 0 || item?.visits_in_progress > 0) ? '#22C55E' : '#EF4444',
                   }}
-                />
+                /> */}
               </HStack>
               <Text fontSize="12px" color="#666" mt="2px">
                 {item?.team_name || 'Sem equipe'}
@@ -86,16 +86,16 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
 
           </Flex>
 
-          <View style={{ position: 'absolute', right: -10, top: -15 }}>
+          {/* <View style={{ position: 'absolute', right: -10, top: -15 }}>
 
             <Eye width={20} height={20} />
-          </View>
+          </View> */}
         </Flex>
 
         {/* Informações de horário */}
         <Flex direction="row" justifyContent="space-between" mb="16px">
           <Box alignItems="center">
-            <Text fontSize="10px" color="#666" mb="2px">Entrada</Text>
+            <Text fontSize="10px" color="#666" mb="2px">Prim. Entrada</Text>
             <Text fontSize="12px" color="#2E2F34" fontWeight="500">
               {item?.first_check_in || '-'}
             </Text>
@@ -111,7 +111,7 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
           )}
 
           <Box alignItems="center">
-            <Text fontSize="10px" color="#666" mb="2px">Saída</Text>
+            <Text fontSize="10px" color="#666" mb="2px">Últ. Saída</Text>
             <Text fontSize="12px" color="#2E2F34" fontWeight="500">
               {item?.last_check_in || '-'}
             </Text>

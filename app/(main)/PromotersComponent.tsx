@@ -168,7 +168,7 @@ export default function PromotersComponent() {
             <TextNameSmall>Gestão de equipe</TextNameSmall>
           </ContainerText>
         </ContainerIconCenter>
-        <ContainerSearch>
+        {/* <ContainerSearch>
           <ContainerInput>
             <Input
               value={valueSearch}
@@ -177,7 +177,7 @@ export default function PromotersComponent() {
             />
             <SearchPrimary width={20} height={20} />
           </ContainerInput>
-        </ContainerSearch>
+        </ContainerSearch> */}
         <ContainerBody>
           <VStack space="19px">
             <Flex
