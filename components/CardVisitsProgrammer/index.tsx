@@ -205,7 +205,7 @@ export const CardVisitsProgrammer = () => {
           </HStack>
 
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 10 }}>
-            {visit.industries.map((industry: { id: number, name: string }, index: number) => (
+            {visit.industries && Array.isArray(visit.industries) && visit.industries.map((industry: { id: number, name: string }, index: number) => (
               <View
                 key={industry.id || index}
                 style={{
