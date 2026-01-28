@@ -12,6 +12,7 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 103,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/icon-710x599-ios.png",
         "backgroundColor": "#ffffff"
@@ -46,7 +47,6 @@
       "compileSdkVersion": 34,
       "targetSdkVersion": 34,
       "minSdkVersion": 23,
-      "versionCode": 103,
       "playStoreUrl": "https://play.google.com/store/apps/details?id=com.rockat.supervisor",
       "jsEngine": "hermes"
     },
