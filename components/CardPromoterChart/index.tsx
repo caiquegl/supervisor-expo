@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useState, memo, useMemo } from "react";
 import { Box, Center, Divider, Flex, HStack, Spinner, Text, VStack } from "native-base";
 import Icon from 'react-native-vector-icons/Feather'
-import IconFa from 'react-native-vector-icons/FontAwesome'
-import Phone from '../../assets/icon/phone-gray.svg'
-import { TouchableOpacity, ScrollView, View, Linking } from 'react-native'
+import { TouchableOpacity, ScrollView, View } from 'react-native'
 import { CardOnOff } from "../CardOnOff";
+import { ContactButtons } from "../ContactButtons";
 import { userContext } from "../../context/userContext";
 import { useQuery } from "@apollo/client";
 import { LIST_PROMOTER_QUERY, ON_OFF_QUERY } from "../../context/querys";
@@ -168,28 +167,7 @@ const PromoterItem = memo(({ item, onPress }: { item: any; onPress: () => void }
         </Flex>
 
         {/* Botões de ação */}
-        <HStack mt="16px" space="12px" justifyContent="center">
-          <Center
-            borderRadius="12px"
-            bg="#F1F1F1"
-            w="40px"
-            h="40px"
-          >
-            <TouchableOpacity onPress={() => Linking.openURL(`tel:${item.phone}`)}>
-              <Phone width={20} height={20} />
-            </TouchableOpacity>
-          </Center>
-          <Center
-            borderRadius="12px"
-            bg="#C7FDE2"
-            w="40px"
-            h="40px"
-          >
-            <TouchableOpacity onPress={() => Linking.openURL(`https://wa.me/${item.phone.replace(/\D/g, '')}`)}>
-              <IconFa name="whatsapp" size={20} style={{ color: '#00B259' }} />
-            </TouchableOpacity>
-          </Center>
-        </HStack>
+        <ContactButtons phone={item.phone} />
       </Box>
     </TouchableOpacity>
   );

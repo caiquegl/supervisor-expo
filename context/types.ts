@@ -4,6 +4,34 @@ export interface IPropsColaborator {
     total: number
 }
 
+export interface IPropsPromoterWithCheckIn {
+  id: number
+  name: string
+  team_name: string | null
+  phone?: string | null
+  visit_id: number
+  visit_status: string | null
+  pdv_name: string | null
+  pdv_address: string | null
+  first_check_in: string | null
+  last_check_out: string | null
+  created_at: string | null
+  industries?: { id: number; name: string; total_pictures: number }[] | null
+}
+
+export interface IPropsPdvWithCheckIn {
+  id: number
+  name: string
+  address: string | null
+  visit_id: number
+  visit_status: string | null
+  promoter_name: string | null
+  first_check_in: string | null
+  last_check_out: string | null
+  created_at: string | null
+  industries?: { id: number; name: string; total_pictures: number }[] | null
+}
+
 export interface IPropsPromoterOptions {
   label: string
   value: number

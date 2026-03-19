@@ -220,3 +220,67 @@ export const ADD_TASK_MUTATION = gql`
     }
   }
 `;
+
+export const LIST_PROMOTERS_WITH_CHECK_IN_QUERY = gql`
+  query ListPromotersWithCheckIn($filter: ListPromotersWithCheckInFilter!) {
+    listPromotersWithCheckIn(filter: $filter) {
+      id
+      name
+      team_name
+      visit_id
+      visit_status
+      pdv_name
+      pdv_address
+      first_check_in
+      last_check_out
+      created_at
+      industries {
+        id
+        name
+        total_pictures
+      }
+    }
+  }
+`;
+
+export const LIST_PROMOTERS_WITHOUT_CHECK_IN_QUERY = gql`
+  query ListPromotersWithoutCheckIn($filter: ListPromotersWithoutCheckInFilter!) {
+    listPromotersWithoutCheckIn(filter: $filter) {
+      id
+      name
+      team_name
+      phone
+    }
+  }
+`;
+
+export const LIST_PDVS_WITH_CHECK_IN_QUERY = gql`
+  query ListPdvsWithCheckIn($filter: ListPdvsWithCheckInFilter!) {
+    listPdvsWithCheckIn(filter: $filter) {
+      id
+      name
+      address
+      visit_id
+      visit_status
+      promoter_name
+      first_check_in
+      last_check_out
+      created_at
+      industries {
+        id
+        name
+        total_pictures
+      }
+    }
+  }
+`;
+
+export const LIST_PDVS_WITHOUT_CHECK_IN_QUERY = gql`
+  query ListPdvsWithoutCheckIn($filter: ListPdvsWithoutCheckInFilter!) {
+    listPdvsWithoutCheckIn(filter: $filter) {
+      id
+      name
+      address
+    }
+  }
+`;
