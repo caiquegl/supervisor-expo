@@ -383,8 +383,8 @@ export default function VisitDetailsIndustry() {
                           getVisitIndustryTask({
                             variables: {
                               input: {
-                                visit_id: params.visitId,
-                                sub_workspace_id: params.industryId
+                                visit_id: parseInt(params.visitId),
+                                sub_workspace_id: parseInt(params.industryId)
                               }
                             }
                           });
