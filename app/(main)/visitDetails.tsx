@@ -20,6 +20,7 @@ import { useLocalSearchParams, router } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { userContext } from "../../context/userContext";
 import { AddIndustryModal } from "../../components/VisitDetails/AddIndustryModal";
+import { VisitFormsList } from "../../components/VisitDetails/VisitFormsList";
 
 type VisitParams = {
     id: string;
@@ -45,6 +46,8 @@ const handleBack = () => {
 export default function VisitDetails() {
   const visit = useLocalSearchParams<VisitParams>();
   const { user } = userContext();
+  // Ambiente exclusivo não tem indústrias: os formulários são da visita inteira.
+  const isExclusiveEnvironment = user.shared_environment === false;
 
   const [industries, setIndustries] = useState<any[]>(
     visit.industries ? JSON.parse(visit.industries) : []
@@ -316,7 +319,11 @@ export default function VisitDetails() {
               </View>
             )}
 
-            {/* Botão Adicionar Indústria */}
+            {/* Formulários da Visita (ambiente exclusivo) */}
+            {isExclusiveEnvironment && <VisitFormsList visitId={Number(visit.id)} />}
+
+            {/* Botão Adicionar Indústria (apenas ambiente compartilhado) */}
+            {!isExclusiveEnvironment && (
             <View style={{ 
               backgroundColor: '#f8f9fa', 
               padding: 10, 
@@ -358,12 +365,14 @@ export default function VisitDetails() {
                 </Text>
               )}
             </View>
+            )}
             </VStack>
           </ScrollView>
         </ContainerBody>
       </Container>
       <Menu routeActive="programmerVisits" />
 
+      {!isExclusiveEnvironment && (
       <AddIndustryModal
         visible={showAddIndustryModal}
         onClose={() => setShowAddIndustryModal(false)}
@@ -373,6 +382,7 @@ export default function VisitDetails() {
         user={{ token: user.token, slug: user.slug, workspace_id: user.workspace_id }}
         onIndustryAdded={(industry) => setIndustries((prev) => [...prev, { ...industry, total_pictures: 0 }])}
       />
+      )}
     </View>
   );
 }
